@@ -1,8 +1,9 @@
 package com.UNED.APIDataMujer.mapper;
 
-import com.UNED.APIDataMujer.dto.CommonRegisterDTO;
-import com.UNED.APIDataMujer.dto.PhysicalPersonDTO;
-import com.UNED.APIDataMujer.dto.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.*;
+import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.entity.LegalPerson;
 import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.PhysicalPerson;
 import com.UNED.APIDataMujer.entity.User;
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PersonMapper {
 
-    public Person ToEntity(CommonRegisterDTO dto){
+    public Person toEntity(CommonRegisterDTO dto, PersonType personType){
         return Person.builder()
-                .personType(PersonType.FISICA)
+                .personType(personType)
                 .phoneNumber(dto.phoneNumber())
                 .country(dto.country())
                 .location(dto.location())
@@ -35,7 +36,17 @@ public class PersonMapper {
                 .build();
     }
 
-    public PhysicalPersonDTO toDto(Person person, User user, PhysicalPerson physicalPerson){
+    public LegalPerson toEntity(Person person, LegalPersonRegisterDTO dto){
+        return LegalPerson.builder()
+                .person(person)
+                .legalId(dto.legalId())
+                .businessName(dto.businessName())
+                .foundationDate(dto.foundationDate())
+                .build();
+    }
+
+    public PhysicalPersonDTO toDto(User user, PhysicalPerson physicalPerson){
+        Person person = physicalPerson.getPerson();
         return new PhysicalPersonDTO(
                 physicalPerson.getNationalId(),
                 physicalPerson.getFirstSurname(),
@@ -43,6 +54,19 @@ public class PersonMapper {
                 physicalPerson.getName(),
                 physicalPerson.getProfession(),
                 physicalPerson.getBirthDate(),
+                person.getPhoneNumber(),
+                person.getCountry(),
+                person.getLocation(),
+                user.getUsername(),
+                user.getEmail());
+    }
+
+    public LegalPersonDTO toDto(User user, LegalPerson legalPerson){
+        Person person = legalPerson.getPerson();
+        return new LegalPersonDTO(
+                legalPerson.getLegalId(),
+                legalPerson.getBusinessName(),
+                legalPerson.getFoundationDate(),
                 person.getPhoneNumber(),
                 person.getCountry(),
                 person.getLocation(),

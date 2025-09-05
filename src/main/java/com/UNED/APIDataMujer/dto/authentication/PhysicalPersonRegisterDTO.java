@@ -1,5 +1,6 @@
-package com.UNED.APIDataMujer.dto;
+package com.UNED.APIDataMujer.dto.authentication;
 
+import com.UNED.APIDataMujer.dto.CommonRegisterDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

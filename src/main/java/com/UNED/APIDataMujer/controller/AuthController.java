@@ -1,6 +1,7 @@
 package com.UNED.APIDataMujer.controller;
 
-import com.UNED.APIDataMujer.dto.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.service.AuthServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +29,19 @@ public class AuthController {
                 .path("/users/{username}")
                 .buildAndExpand(physicalPerson.username())
                 .toUri();
-        return ResponseEntity.created(location).body("Usuario registrado exitosamente");
+        return ResponseEntity.created(location).body("Usuario (Persona Física) registrado exitosamente");
     }
 
-    /*@GetMapping("/register-legal")
-    public ResponseEntity<?> register(@Valid @RequestBody final ){
-        return ResponseEntity.ok(null);
-    }*/
+    @GetMapping("/register-legal")
+    public ResponseEntity<?> register(@Valid @RequestBody final LegalPersonRegisterDTO legalPersonRegisterDTO){
+        final var legalPerson = authService.legalRegister(legalPersonRegisterDTO);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/users/{username}")
+                .buildAndExpand(legalPerson.username())
+                .toUri();
+        return ResponseEntity.created(location).body("Usuario (Persona Jurídica) registrado exitosamente");
+    }
 
     @GetMapping("/login")
     public ResponseEntity<?> login(){
