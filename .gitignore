@@ -1,0 +1,91 @@
+# ===============================
+# Maven / Java
+# ===============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Maven wrapper: trackear el jar
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# ===============================
+# IDEs
+# ===============================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.springBeans
+.apt_generated/
+.sts4-cache/
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===============================
+# OS / Misc
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+*.swp
+*~
+$RECYCLE.BIN/
+Desktop.ini
+
+# ===============================
+# Logs / temp
+# ===============================
+*.log
+*.tmp
+*.bak
+
+# ===============================
+# SSL / Keystores
+# ===============================
+*.p12
+*.jks
+
+# ===============================
+# Git / merge backups
+# ===============================
+*.orig
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+*_BACKUP_*.txt
+*_BASE_*.txt
+*_LOCAL_*.txt
+*_REMOTE_*.txt
+
+# ===============================
+# Docs / helpers
+# ===============================
+README.html
+HELP.md
