@@ -40,7 +40,7 @@ public class PhysicalPerson {
     @Column(name = "Nombre", length = 15, nullable = false)
     private String name;
 
-    @Column(name = "Profesion", length = 25, nullable = false)
+    @Column(name = "Profesion", length = 35, nullable = false)
     private String profession;
 
     @Column(name = "FechaNacimiento", nullable = false)

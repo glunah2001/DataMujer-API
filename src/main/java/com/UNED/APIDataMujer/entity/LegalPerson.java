@@ -31,7 +31,7 @@ public class LegalPerson {
     @Column(name = "IdLegal", length = 10, unique = true, nullable = false)
     private String legalId;
 
-    @Column(name = "NombreNegocio", length = 25, nullable = false)
+    @Column(name = "NombreNegocio", length = 50, nullable = false)
     private String businessName;
 
     @Column(name = "FechaFundacion", nullable = false)

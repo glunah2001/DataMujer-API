@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.entity;
 
+import com.UNED.APIDataMujer.enums.Country;
 import com.UNED.APIDataMujer.enums.PersonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,9 @@ public class Person {
     @Column(name = "Telefono", length = 17, unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column(name = "Pais", length = 15, nullable = false)
-    private String country;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Pais", length = 35, nullable = false)
+    private Country country;
 
     @Column(name = "Ubicacion", nullable = false)
     private String location;
