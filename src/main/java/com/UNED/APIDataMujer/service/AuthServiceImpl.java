@@ -27,50 +27,10 @@ import java.util.List;
 public class AuthServiceImpl implements AuthService{
 
     private final JwtService jwtService;
-
     private final AuthenticationManager authManager;
-
-    private final PersonMapper personMapper;
     private final TokenMapper tokenMapper;
-    private final UserMapper userMapper;
-
-    private final LegalPersonRepository legalPersonRepository;
-    private final PersonRepository personRepository;
-    private final PhysicalPersonRepository physicalPersonRepository;
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
-
-    private record CommonRegisterResult(User user, Person person){};
-
-    @Override
-    @Transactional
-    public LegalPersonDTO legalRegister(LegalPersonRegisterDTO legalPersonRegisterDTO) {
-        CommonRegisterDTO commonDto = legalPersonRegisterDTO.commonRegisterDTO();
-
-        final var personData = commonRegister(commonDto, PersonType.LEGAL);
-        Person person = personData.person;
-        User user = personData.user;
-
-        var legalPerson = personMapper.toEntity(person, legalPersonRegisterDTO);
-        LegalPerson registeredlegalPerson = legalPersonRepository.save(legalPerson);
-
-        return personMapper.toDto(user, registeredlegalPerson);
-    }
-
-    @Override
-    @Transactional
-    public PhysicalPersonDTO physicalRegister(final PhysicalPersonRegisterDTO physicalRegisterDTO) {
-        CommonRegisterDTO commonDto = physicalRegisterDTO.commonRegisterDTO();
-
-        final var personData = commonRegister(commonDto, PersonType.FISICA);
-        Person person = personData.person;
-        User user = personData.user;
-
-        var physicalPerson = personMapper.toEntity(person, physicalRegisterDTO);
-        PhysicalPerson registeredPhysicalPerson = physicalPersonRepository.save(physicalPerson);
-
-        return personMapper.toDto(user, registeredPhysicalPerson);
-    }
 
     @Override
     public TokenResponse login(final UserLoginDTO userLoginDTO) {
@@ -107,15 +67,7 @@ public class AuthServiceImpl implements AuthService{
         return tokenGeneration(user);
     }
 
-    private CommonRegisterResult commonRegister(final CommonRegisterDTO commonDto, PersonType personType){
-        var person = personMapper.toEntity(commonDto, personType);
-        Person registeredPerson = personRepository.save(person);
 
-        var user = userMapper.toEntity(registeredPerson, commonDto);
-        User registeredUser = userRepository.save(user);
-
-        return new CommonRegisterResult(registeredUser, registeredPerson);
-    }
 
     private TokenResponse tokenGeneration(final User user){
         var accessToken = jwtService.generateAccessToken(user);

@@ -7,8 +7,6 @@ import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 
 public interface AuthService {
-    PhysicalPersonDTO physicalRegister(PhysicalPersonRegisterDTO physicalRegisterDTO);
-    LegalPersonDTO legalRegister(LegalPersonRegisterDTO legalPersonRegisterDTO);
     TokenResponse login (UserLoginDTO userLoginDTO);
     TokenResponse refresh (String authHeader);
 }

@@ -21,28 +21,6 @@ public class AuthController {
 
     private final AuthServiceImpl authService;
 
-    @PostMapping("/register-physical")
-    public ResponseEntity<?> register(@Valid @RequestBody final PhysicalPersonRegisterDTO physicalPersonRegisterDTO){
-        final var physicalPerson = authService.physicalRegister(physicalPersonRegisterDTO);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/users/{username}")
-                .buildAndExpand(physicalPerson.username())
-                .toUri();
-        return ResponseEntity.created(location).body(physicalPerson);
-    }
-
-    @PostMapping("/register-legal")
-    public ResponseEntity<?> register(@Valid @RequestBody final LegalPersonRegisterDTO legalPersonRegisterDTO){
-        final var legalPerson = authService.legalRegister(legalPersonRegisterDTO);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/users/{username}")
-                .buildAndExpand(legalPerson.username())
-                .toUri();
-        return ResponseEntity.created(location).body(legalPerson);
-    }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody final UserLoginDTO loginDTO){
         final TokenResponse token = authService.login(loginDTO);
