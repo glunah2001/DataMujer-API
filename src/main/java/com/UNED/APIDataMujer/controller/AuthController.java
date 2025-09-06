@@ -2,14 +2,14 @@ package com.UNED.APIDataMujer.controller;
 
 import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
 import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
+import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.service.AuthServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -21,7 +21,7 @@ public class AuthController {
 
     private final AuthServiceImpl authService;
 
-    @GetMapping("/register-physical")
+    @PostMapping("/register-physical")
     public ResponseEntity<?> register(@Valid @RequestBody final PhysicalPersonRegisterDTO physicalPersonRegisterDTO){
         final var physicalPerson = authService.physicalRegister(physicalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
@@ -29,10 +29,10 @@ public class AuthController {
                 .path("/users/{username}")
                 .buildAndExpand(physicalPerson.username())
                 .toUri();
-        return ResponseEntity.created(location).body("Usuario (Persona Física) registrado exitosamente");
+        return ResponseEntity.created(location).body(physicalPerson);
     }
 
-    @GetMapping("/register-legal")
+    @PostMapping("/register-legal")
     public ResponseEntity<?> register(@Valid @RequestBody final LegalPersonRegisterDTO legalPersonRegisterDTO){
         final var legalPerson = authService.legalRegister(legalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
@@ -40,21 +40,18 @@ public class AuthController {
                 .path("/users/{username}")
                 .buildAndExpand(legalPerson.username())
                 .toUri();
-        return ResponseEntity.created(location).body("Usuario (Persona Jurídica) registrado exitosamente");
+        return ResponseEntity.created(location).body(legalPerson);
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<?> login(){
-        return ResponseEntity.ok(null);
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody final UserLoginDTO loginDTO){
+        final TokenResponse token = authService.login(loginDTO);
+        return ResponseEntity.ok(token);
     }
 
-    @GetMapping("/refresh")
-    public ResponseEntity<?> refresh(){
-        return ResponseEntity.ok(null);
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestHeader (HttpHeaders.AUTHORIZATION) final String authHeader){
+        final TokenResponse token = authService.refresh(authHeader);
+        return ResponseEntity.ok(token);
     }
-
-    /*@GetMapping("/test")
-    public String refresh(){
-        return "prueba";
-    }*/
 }

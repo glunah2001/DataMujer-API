@@ -1,4 +1,4 @@
-package com.UNED.APIDataMujer.dto;
+package com.UNED.APIDataMujer.dto.authentication;
 
 import com.UNED.APIDataMujer.enums.Country;
 import jakarta.validation.constraints.*;
