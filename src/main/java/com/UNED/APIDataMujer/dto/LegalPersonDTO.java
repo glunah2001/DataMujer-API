@@ -13,5 +13,4 @@ public record LegalPersonDTO(
         String location,
         String username,
         String email
-) {
-}
+) { }
