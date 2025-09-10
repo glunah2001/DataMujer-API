@@ -1,7 +1,7 @@
 package com.UNED.APIDataMujer.controller;
 
-import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.register.LegalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.register.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.service.UserRegisterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

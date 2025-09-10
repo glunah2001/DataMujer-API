@@ -1,19 +1,10 @@
 package com.UNED.APIDataMujer.service;
 
-import com.UNED.APIDataMujer.dto.*;
-import com.UNED.APIDataMujer.dto.authentication.CommonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.entity.*;
-import com.UNED.APIDataMujer.enums.PersonType;
-import com.UNED.APIDataMujer.enums.TokenType;
-import com.UNED.APIDataMujer.mapper.PersonMapper;
 import com.UNED.APIDataMujer.mapper.TokenMapper;
-import com.UNED.APIDataMujer.mapper.UserMapper;
 import com.UNED.APIDataMujer.repository.*;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,7 +39,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public TokenResponse refresh(String authHeader) {
+    public TokenResponse refresh(final String authHeader) {
         if(authHeader == null || !authHeader.startsWith("Bearer "))
             throw new IllegalArgumentException("Formato de token inválido.");
 
@@ -70,8 +61,8 @@ public class AuthServiceImpl implements AuthService{
 
 
     private TokenResponse tokenGeneration(final User user){
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        final var accessToken = jwtService.generateAccessToken(user);
+        final var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserToken(user);
         saveUserToken(accessToken, user);
         return new TokenResponse(accessToken, refreshToken);
