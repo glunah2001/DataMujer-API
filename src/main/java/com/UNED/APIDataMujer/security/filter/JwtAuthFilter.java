@@ -34,6 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final UserDetailsService userDetailsService;
     private final ApiErrorMapper apiErrorMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -122,6 +123,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 path
         );
 
-        response.getWriter().write(new ObjectMapper().writeValueAsString(apiError));
+        response.getWriter().write(objectMapper.writeValueAsString(apiError));
     }
 }
