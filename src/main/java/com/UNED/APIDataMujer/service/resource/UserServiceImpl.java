@@ -1,4 +1,4 @@
-package com.UNED.APIDataMujer.service;
+package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.register.CommonUpdateDTO;
 import com.UNED.APIDataMujer.dto.register.LegalPersonUpdateDTO;

@@ -1,4 +1,4 @@
-package com.UNED.APIDataMujer.service;
+package com.UNED.APIDataMujer.service.registration;
 
 import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserRegisterServiceImpl implements UserRegisterService{
+public class PersonRegisterServiceImpl implements PersonRegisterService {
 
     private final LegalPersonRepository legalPersonRepository;
     private final PersonRepository personRepository;

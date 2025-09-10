@@ -1,4 +1,4 @@
-package com.UNED.APIDataMujer.service;
+package com.UNED.APIDataMujer.service.jwt;
 
 import com.UNED.APIDataMujer.entity.User;
 

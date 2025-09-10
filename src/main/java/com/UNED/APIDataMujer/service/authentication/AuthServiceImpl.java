@@ -1,10 +1,11 @@
-package com.UNED.APIDataMujer.service;
+package com.UNED.APIDataMujer.service.authentication;
 
 import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.entity.*;
 import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.*;
+import com.UNED.APIDataMujer.service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

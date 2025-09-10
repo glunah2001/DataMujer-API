@@ -2,7 +2,7 @@ package com.UNED.APIDataMujer.controller;
 
 import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
-import com.UNED.APIDataMujer.service.AuthServiceImpl;
+import com.UNED.APIDataMujer.service.authentication.AuthServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

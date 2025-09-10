@@ -2,7 +2,7 @@ package com.UNED.APIDataMujer.controller;
 
 import com.UNED.APIDataMujer.dto.register.LegalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.register.PhysicalPersonUpdateDTO;
-import com.UNED.APIDataMujer.service.UserService;
+import com.UNED.APIDataMujer.service.resource.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -5,7 +5,7 @@ import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.mapper.ApiErrorMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
-import com.UNED.APIDataMujer.service.JwtService;
+import com.UNED.APIDataMujer.service.jwt.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

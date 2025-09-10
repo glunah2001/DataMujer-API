@@ -2,7 +2,7 @@ package com.UNED.APIDataMujer.controller;
 
 import com.UNED.APIDataMujer.dto.register.LegalPersonRegisterDTO;
 import com.UNED.APIDataMujer.dto.register.PhysicalPersonRegisterDTO;
-import com.UNED.APIDataMujer.service.UserRegisterService;
+import com.UNED.APIDataMujer.service.registration.PersonRegisterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,13 @@ import java.net.URI;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/register")
-public class UserRegisterController {
+public class PersonRegisterController {
 
-    private final UserRegisterService userRegisterService;
+    private final PersonRegisterService personRegisterService;
 
     @PostMapping("/physical")
     public ResponseEntity<?> register(@Valid @RequestBody final PhysicalPersonRegisterDTO physicalPersonRegisterDTO){
-        final var physicalPerson = userRegisterService.physicalRegister(physicalPersonRegisterDTO);
+        final var physicalPerson = personRegisterService.physicalRegister(physicalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/users/{username}")
@@ -34,7 +34,7 @@ public class UserRegisterController {
 
     @PostMapping("/legal")
     public ResponseEntity<?> register(@Valid @RequestBody final LegalPersonRegisterDTO legalPersonRegisterDTO){
-        final var legalPerson = userRegisterService.legalRegister(legalPersonRegisterDTO);
+        final var legalPerson = personRegisterService.legalRegister(legalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/users/{username}")
