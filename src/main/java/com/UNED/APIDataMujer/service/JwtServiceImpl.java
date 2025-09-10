@@ -44,13 +44,15 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public boolean isTokenValid(final String token, final User user) {
         var username = getUsername(token);
-        return username.equals(user.getUsername()) || !isTokenExpired(getExpiration(token));
+        return username.equals(user.getUsername()) && !isTokenExpired(getExpiration(token));
     }
 
     private String buildToken(final User user, long expiration){
         return Jwts.builder()
                 .subject((user.getUsername()))
                 .id(UUID.randomUUID().toString())
+                .claim("role", user.getRole().name())
+                .claim("personType", user.getPerson().getPersonType().name())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+expiration))
                 .signWith(getSecretKey())
