@@ -1,10 +1,10 @@
 package com.UNED.APIDataMujer.service;
 
-import com.UNED.APIDataMujer.dto.LegalPersonDTO;
-import com.UNED.APIDataMujer.dto.PhysicalPersonDTO;
-import com.UNED.APIDataMujer.dto.authentication.CommonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
+import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
+import com.UNED.APIDataMujer.dto.register.CommonRegisterDTO;
+import com.UNED.APIDataMujer.dto.register.LegalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.register.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.entity.LegalPerson;
 import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.PhysicalPerson;
@@ -35,7 +35,7 @@ public class UserRegisterServiceImpl implements UserRegisterService{
 
     @Override
     @Transactional
-    public LegalPersonDTO legalRegister(LegalPersonRegisterDTO legalPersonRegisterDTO) {
+    public LegalPersonDTO legalRegister(final LegalPersonRegisterDTO legalPersonRegisterDTO) {
         CommonRegisterDTO commonDto = legalPersonRegisterDTO.commonRegisterDTO();
 
         final var personData = commonRegister(commonDto, PersonType.LEGAL);

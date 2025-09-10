@@ -1,4 +1,4 @@
-package com.UNED.APIDataMujer.dto;
+package com.UNED.APIDataMujer.dto.response;
 
 import com.UNED.APIDataMujer.enums.Country;
 
@@ -13,5 +13,4 @@ public record LegalPersonDTO(
         String location,
         String username,
         String email
-) {
-}
+) { }

@@ -1,7 +1,5 @@
 package com.UNED.APIDataMujer.controller;
 
-import com.UNED.APIDataMujer.dto.authentication.LegalPersonRegisterDTO;
-import com.UNED.APIDataMujer.dto.authentication.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.service.AuthServiceImpl;
@@ -10,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
