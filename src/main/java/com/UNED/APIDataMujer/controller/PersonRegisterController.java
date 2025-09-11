@@ -29,7 +29,8 @@ public class PersonRegisterController {
                 .path("/users/{username}")
                 .buildAndExpand(physicalPerson.username())
                 .toUri();
-        return ResponseEntity.created(location).body(physicalPerson);
+        return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
+                "mediante el correo enviado a la dirección registrada.");
     }
 
     @PostMapping("/legal")
@@ -40,7 +41,8 @@ public class PersonRegisterController {
                 .path("/users/{username}")
                 .buildAndExpand(legalPerson.username())
                 .toUri();
-        return ResponseEntity.created(location).body(legalPerson);
+        return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
+                "mediante el correo enviado a la dirección registrada.");
     }
 
 }

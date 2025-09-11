@@ -3,9 +3,12 @@ package com.UNED.APIDataMujer.service.authentication;
 import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.entity.*;
+import com.UNED.APIDataMujer.enums.TokenType;
+import com.UNED.APIDataMujer.exception.NotActiveUserException;
 import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.*;
 import com.UNED.APIDataMujer.service.jwt.JwtService;
+import com.UNED.APIDataMujer.service.registration.ActivationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,8 +22,11 @@ import java.util.List;
 public class AuthServiceImpl implements AuthService{
 
     private final JwtService jwtService;
+    private final ActivationService activationService;
+
     private final AuthenticationManager authManager;
     private final TokenMapper tokenMapper;
+
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
 
@@ -35,6 +41,8 @@ public class AuthServiceImpl implements AuthService{
         var user = userRepository.findByUsername(userLoginDTO.username())
                 .orElseThrow(() ->
                         new UsernameNotFoundException("El usuario no se encuentra registrado en el sistema."));
+
+        isUserActive(user);
 
         return tokenGeneration(user);
     }
@@ -59,7 +67,13 @@ public class AuthServiceImpl implements AuthService{
         return tokenGeneration(user);
     }
 
-
+    private void isUserActive(User user){
+        if(user.isActive()) return;
+        revokeAllUserToken(user);
+        activationService.generateActivationToken(user);
+        throw new NotActiveUserException("El usuario ha proporcionado las credenciales correctas pero no ha autentificado " +
+                "su cuenta. Por favor, active su cuenta mediante el correo enviado.");
+    }
 
     private TokenResponse tokenGeneration(final User user){
         final var accessToken = jwtService.generateAccessToken(user);
@@ -83,7 +97,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private void saveUserToken(final String jjwt, final User user){
-        final var token = tokenMapper.toEntity(jjwt, user);
+        final var token = tokenMapper.toEntity(jjwt, user, TokenType.BEARER);
         tokenRepository.save(token);
     }
 }

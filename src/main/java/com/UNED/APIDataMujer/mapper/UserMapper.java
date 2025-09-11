@@ -23,7 +23,7 @@ public class UserMapper {
                 .password(passwordEncoder.encode(dto.password()))
                 .role(Role.ROLE_GUEST)
                 .registrationDate(LocalDate.now())
-                .isActive(true)
+                .isActive(false)
                 .isContributor(false)
                 .isAffiliate(false)
                 .person(person)

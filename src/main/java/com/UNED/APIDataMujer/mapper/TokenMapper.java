@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TokenMapper {
 
-    public Token toEntity(String jjwt, User user){
+    public Token toEntity(String jjwt, User user, TokenType type){
         return Token.builder()
                 .token(jjwt)
-                .tokenType(TokenType.BEARER)
+                .tokenType(type)
                 .revoked(false)
                 .expired(false)
                 .user(user)

@@ -28,8 +28,11 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
     private final PersonRepository personRepository;
     private final PhysicalPersonRepository physicalPersonRepository;
     private final UserRepository userRepository;
+
     private final PersonMapper personMapper;
     private final UserMapper userMapper;
+
+    private final ActivationService activationService;
 
     private record CommonRegisterResult(User user, Person person){};
 
@@ -45,6 +48,8 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
         var legalPerson = personMapper.toEntity(person, legalPersonRegisterDTO);
         LegalPerson registeredlegalPerson = legalPersonRepository.save(legalPerson);
 
+        activationService.generateActivationToken(user);
+
         return personMapper.toDto(user, registeredlegalPerson);
     }
 
@@ -59,6 +64,8 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
 
         var physicalPerson = personMapper.toEntity(person, physicalRegisterDTO);
         PhysicalPerson registeredPhysicalPerson = physicalPersonRepository.save(physicalPerson);
+
+        activationService.generateActivationToken(user);
 
         return personMapper.toDto(user, registeredPhysicalPerson);
     }

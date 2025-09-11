@@ -1,5 +1,7 @@
 package com.UNED.APIDataMujer.enums;
 
 public enum TokenType {
-    BEARER
+    BEARER,
+    ACTIVATION,
+    PASSWORD_RESET
 }

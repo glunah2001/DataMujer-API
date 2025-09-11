@@ -22,6 +22,18 @@ public class GlobalExceptionHandler {
 
     private final ApiErrorMapper apiErrorMapper;
 
+    @ExceptionHandler(NotActiveUserException.class)
+    public ResponseEntity<ApiError> NotActiveUserHandler(NotActiveUserException ex, HttpServletRequest request){
+        ApiError error = apiErrorMapper.toDto(
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(error);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> illegalArgumentHandler(IllegalArgumentException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
