@@ -4,7 +4,6 @@ import com.UNED.APIDataMujer.dto.authentication.ResetPasswordDTO;
 import com.UNED.APIDataMujer.entity.Token;
 import com.UNED.APIDataMujer.enums.TokenType;
 import com.UNED.APIDataMujer.mapper.TokenMapper;
-import com.UNED.APIDataMujer.mapper.UserMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
@@ -12,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -61,12 +62,20 @@ public class PasswordResetService {
         long expiration = Long.parseLong(parts[1]);
 
         if(Instant.now().toEpochMilli() > expiration){
+            revokeToken(token);
             throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
         }
 
         var user = token.getUser();
         user.setPassword(passwordEncoder.encode(dto.password()));
         userRepository.save(user);
+        revokeToken(token);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void revokeToken(Token token) {
+        token.setExpired(true);
+        token.setRevoked(true);
+        tokenRepository.save(token);
+    }
 }

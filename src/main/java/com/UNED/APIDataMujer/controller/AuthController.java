@@ -39,7 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody final ResetPasswordDTO resetPasswordDTO){
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody final ResetPasswordDTO resetPasswordDTO){
         passwordResetService.resetPassword(resetPasswordDTO);
         return ResponseEntity.ok("Contraseña restablecida con éxito");
     }

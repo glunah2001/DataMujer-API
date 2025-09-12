@@ -7,10 +7,14 @@ import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -33,6 +37,14 @@ public class ActivationService {
             throw new IllegalArgumentException("Este token de activación ha caducado.");
         }
 
+        String[] parts = token.getToken().split("_");
+        long expiration = Long.parseLong(parts[1]);
+
+        if(Instant.now().toEpochMilli() > expiration){
+            revokeToken(token);
+            throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
+        }
+
         User user = token.getUser();
         user.setActive(true);
         userRepository.save(user);
@@ -43,7 +55,8 @@ public class ActivationService {
     }
 
     public void generateActivationToken(final User user) {
-        String tokenValue = UUID.randomUUID().toString();
+        long expiration = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();
+        String tokenValue = UUID.randomUUID().toString() +"_"+expiration;
         Token token = tokenMapper.toEntity(tokenValue, user, TokenType.ACTIVATION);
         tokenRepository.save(token);
 
@@ -51,5 +64,12 @@ public class ActivationService {
         emailSendingService.sendEmail(user.getEmail(),
                 "Activa tu Cuenta",
                 "Haz click en el enlace para activar su cuenta: "+activationLink);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void revokeToken(Token token) {
+        token.setExpired(true);
+        token.setRevoked(true);
+        tokenRepository.save(token);
     }
 }
