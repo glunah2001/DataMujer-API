@@ -20,6 +20,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Clase encargada exclusivamente de llevar a cabo el registro de nuevas personas
+ * como usuarios del sistema.
+ * @author glunah2001
+ * @see PersonRegisterService
+ * */
 @Service
 @RequiredArgsConstructor
 public class PersonRegisterServiceImpl implements PersonRegisterService {
@@ -36,6 +42,11 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
 
     private record CommonRegisterResult(User user, Person person){};
 
+    /**
+     * Función de interfaz encargada del registro de los datos propios de una persona jurídica.
+     * @param legalPersonRegisterDTO dto. Con información propia de una persona jurídica.
+     * @return información personal pública del usuario registrado exitósamente (pendiente de activación).
+     * */
     @Override
     @Transactional
     public LegalPersonDTO legalRegister(final LegalPersonRegisterDTO legalPersonRegisterDTO) {
@@ -53,6 +64,11 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
         return personMapper.toDto(user, registeredlegalPerson);
     }
 
+    /**
+     * Función de interfaz encargada del registro de los datos propios de una persona física.
+     * @param physicalRegisterDTO dto. Con información propia de una persona física.
+     * @return información personal pública del usuario registrado exitósamente (pendiente de activación).
+     * */
     @Override
     @Transactional
     public PhysicalPersonDTO physicalRegister(final PhysicalPersonRegisterDTO physicalRegisterDTO) {
@@ -70,6 +86,12 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
         return personMapper.toDto(user, registeredPhysicalPerson);
     }
 
+    /**
+     * Función auxiliar encargada del registro de los datos comunes (usuario y persona abstracta).
+     * @param commonDto datos comunes almacenados en un dto.
+     * @param personType distintivo para el tipo de persona que se está manejando en este caso.
+     * @return record privado que contiene al usuario registrado y su persona en abstracto.
+     * */
     private CommonRegisterResult commonRegister(final CommonRegisterDTO commonDto, PersonType personType){
         var person = personMapper.toEntity(commonDto, personType);
         Person registeredPerson = personRepository.save(person);

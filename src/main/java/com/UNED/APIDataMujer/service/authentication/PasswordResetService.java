@@ -18,6 +18,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+/**
+ * Esta clase es la encargada del restablecimiento de contraseña por parte de los usuarios
+ * @author AHKolodin
+ * */
 @Service
 @RequiredArgsConstructor
 public class PasswordResetService {
@@ -31,6 +35,14 @@ public class PasswordResetService {
 
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Función inicial del proceso. Encargada de encontrar el usuario con contraseña
+     * a restablecer mediante su correo registrado. Enviá un correo a dicha dirección
+     * con el procedimiento para restablecimiento de Contraseña.
+     * @param email dirección electronica que debe estar registrada para enviar un
+     * token de recuperación de contraseña que se usará en la desktop app.
+     * @throws UsernameNotFoundException en caso de que el email no se encuentre registrado
+     * */
     public void forgotPassword(final String email){
         final var user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
@@ -49,6 +61,14 @@ public class PasswordResetService {
         emailSendingService.sendEmail(email, "Restablecimiento de Contraseña", message);
     }
 
+    /**
+     * Esta función es la encargada de hacer el reseteo de la contraseña, reemplazando
+     * el valor antiguo por una nueva clave de acceso.
+     * @param dto Un dto que contiene el token enviado por correo y que se encuentra
+     * registrado; y la nueva contraseña.
+     * @throws IllegalArgumentException en caso de que el token de restablecimiento sea
+     * inválido o caducado
+     * */
     public void resetPassword(final ResetPasswordDTO dto){
         final var token = tokenRepository.findByToken(dto.token())
                 .orElseThrow(() ->
@@ -72,6 +92,11 @@ public class PasswordResetService {
         revokeToken(token);
     }
 
+    /**
+     * Función auxiliar. Se encarga de revocar el token de recuperación de contraseña.
+     * Esta función no hace rollback ante una excepción controlada.
+     * @param token token de reset utilizado para la operación.
+     * */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void revokeToken(Token token) {
         token.setExpired(true);

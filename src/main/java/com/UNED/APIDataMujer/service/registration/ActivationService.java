@@ -17,6 +17,12 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+/**
+ * Clase que se encarga a lo relacionado a la activación de cuentas de los usuarios.
+ * Aunque esta operación no es exclusiva del proceso de registro, bajo situaciones
+ * normales solo se dará durante este proceso.
+ * @author glunah2001
+ * */
 @Service
 @RequiredArgsConstructor
 public class ActivationService {
@@ -28,6 +34,13 @@ public class ActivationService {
 
     private final EmailSendingService emailSendingService;
 
+    /**
+     * Función principal del proceso. Es la función encargada de ejecutar la activación
+     * del perfil.
+     * @param tokenValue se trata del token de activación enviado al correo del usuario.
+     * @throws IllegalArgumentException en caso de que el token de activación
+     * sea inválido o expirado.
+     * */
     @Transactional
     public void activateAccount(final String tokenValue) {
         Token token = tokenRepository.findByToken(tokenValue)
@@ -54,6 +67,13 @@ public class ActivationService {
         tokenRepository.save(token);
     }
 
+    /**
+     * Función inicial del proceso de activación de cuentas. Se encarga de crear el
+     * token de activación y generar un correo que redirija al usuario a
+     * dicha operación.
+     * @param user El usuario cuya cuenta está inactiva y se le debe ejecutar esta
+     * operación.
+     * */
     public void generateActivationToken(final User user) {
         long expiration = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();
         String tokenValue = UUID.randomUUID().toString() +"_"+expiration;
@@ -66,6 +86,10 @@ public class ActivationService {
                 "Haz click en el enlace para activar su cuenta: "+activationLink);
     }
 
+    /**
+     * Function auxiliar. Se encarga de revocar el token de activación de cuenta.
+     * Esta operación no hace rollback bajo excepción controlada.
+     * */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void revokeToken(Token token) {
         token.setExpired(true);
