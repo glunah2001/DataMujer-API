@@ -11,8 +11,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
 /**
  * Esta clase es la encargada del restablecimiento de contraseña por parte de los usuarios
  * @author AHKolodin
@@ -54,7 +52,9 @@ public class PasswordResetService {
                 "Ingrese dicho token en el espacio indicado en la aplicación junto a su nueva contraseña " +
                 "para hacer efectivo el cambio.",resetToken);
 
-        emailSendingService.sendEmail(email, "Restablecimiento de Contraseña", message);
+        emailSendingService.sendEmail(email,
+                "Restablecimiento de Contraseña",
+                message, user.getUsername());
     }
 
     /**

@@ -12,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-
 /**
  * Clase que se encarga a lo relacionado a la activación de cuentas de los usuarios.
  * Aunque esta operación no es exclusiva del proceso de registro, bajo situaciones
@@ -66,12 +64,18 @@ public class ActivationService {
      * */
     public void generateActivationToken(final User user) {
         tokenService.revokeAllActiveTokens(user);
+
         long expiration = 24 * 60 * 60 * 1000;
         final String activationToken = tokenService.generateToken(expiration);
         tokenService.saveToken(activationToken, user, TokenType.ACTIVATION);
+
         String activationLink = "https://localhost:8443/activate?token=" + activationToken;
+
+        String body = String.format("Nos alegra mucho que te unas a Data Mujer. Por favor, " +
+                "activa tu cuenta desde <a href=%s>este link</a>.", activationLink);
+
         emailSendingService.sendEmail(user.getEmail(),
-                "Activa tu Cuenta",
-                "Haz click en el enlace para activar su cuenta: "+activationLink);
+                "Activación de Cuenta",
+                body, user.getUsername());
     }
 }
