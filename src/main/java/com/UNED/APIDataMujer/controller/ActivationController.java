@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * RestController con el proposition exclusivo de activar las cuentas de los usuarios
+ * @author glunah2001
+ * @see ActivationService
+ * */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/activate")
