@@ -3,19 +3,16 @@ package com.UNED.APIDataMujer.service.registration;
 import com.UNED.APIDataMujer.entity.Token;
 import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.enums.TokenType;
-import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
 
+import com.UNED.APIDataMujer.service.resource.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
 /**
  * Clase que se encarga a lo relacionado a la activación de cuentas de los usuarios.
@@ -26,13 +23,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ActivationService {
-
-    private final TokenMapper tokenMapper;
-
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
 
     private final EmailSendingService emailSendingService;
+    private final TokenService tokenService;
 
     /**
      * Función principal del proceso. Es la función encargada de ejecutar la activación
@@ -50,21 +45,16 @@ public class ActivationService {
             throw new IllegalArgumentException("Este token de activación ha caducado.");
         }
 
-        String[] parts = token.getToken().split("_");
-        long expiration = Long.parseLong(parts[1]);
-
-        if(Instant.now().toEpochMilli() > expiration){
-            revokeToken(token);
-            throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
+        if(tokenService.isTokenExpired(token)){
+            tokenService.revokeToken(token);
+            throw new IllegalArgumentException("Este token de activación ha caducado.");
         }
 
         User user = token.getUser();
         user.setActive(true);
         userRepository.save(user);
 
-        token.setExpired(true);
-        token.setRevoked(true);
-        tokenRepository.save(token);
+        tokenService.revokeToken(token);
     }
 
     /**
@@ -75,25 +65,13 @@ public class ActivationService {
      *             operación.
      * */
     public void generateActivationToken(final User user) {
-        long expiration = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();
-        String tokenValue = UUID.randomUUID().toString() +"_"+expiration;
-        Token token = tokenMapper.toEntity(tokenValue, user, TokenType.ACTIVATION);
-        tokenRepository.save(token);
-
-        String activationLink = "https://localhost:8443/activate?token=" + tokenValue;
+        tokenService.revokeAllActiveTokens(user);
+        long expiration = 24 * 60 * 60 * 1000;
+        final String activationToken = tokenService.generateToken(expiration);
+        tokenService.saveToken(activationToken, user, TokenType.ACTIVATION);
+        String activationLink = "https://localhost:8443/activate?token=" + activationToken;
         emailSendingService.sendEmail(user.getEmail(),
                 "Activa tu Cuenta",
                 "Haz click en el enlace para activar su cuenta: "+activationLink);
-    }
-
-    /**
-     * Function auxiliar. Se encarga de revocar el token de activación de cuenta.
-     * Esta operación no hace rollback bajo excepción controlada.
-     * */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void revokeToken(Token token) {
-        token.setExpired(true);
-        token.setRevoked(true);
-        tokenRepository.save(token);
     }
 }

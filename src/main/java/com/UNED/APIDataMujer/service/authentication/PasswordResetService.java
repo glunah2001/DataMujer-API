@@ -1,22 +1,17 @@
 package com.UNED.APIDataMujer.service.authentication;
 
 import com.UNED.APIDataMujer.dto.authentication.ResetPasswordDTO;
-import com.UNED.APIDataMujer.entity.Token;
 import com.UNED.APIDataMujer.enums.TokenType;
-import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
+import com.UNED.APIDataMujer.service.resource.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
 /**
  * Esta clase es la encargada del restablecimiento de contraseña por parte de los usuarios
@@ -29,9 +24,8 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
 
-    private final TokenMapper tokenMapper;
-
     private final EmailSendingService emailSendingService;
+    private final TokenService tokenService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -50,10 +44,11 @@ public class PasswordResetService {
                         new UsernameNotFoundException("El email: "+email+" no se encuentra registrado a " +
                         "ningún usuario actualmente."));
 
-        long expiration = Instant.now().plus(15, ChronoUnit.MINUTES).toEpochMilli();
-        final String resetToken = UUID.randomUUID() +"_"+ expiration;
-        final Token token = tokenMapper.toEntity(resetToken, user, TokenType.PASSWORD_RESET);
-        tokenRepository.save(token);
+        tokenService.revokeAllActiveTokens(user);
+
+        long expiration = 15 * 60 * 1000;
+        final String resetToken = tokenService.generateToken(expiration);
+        tokenService.saveToken(resetToken, user, TokenType.PASSWORD_RESET);
 
         String message = String.format("Este es su token de restablecimiento de contraseña: %s.\n" +
                 "Ingrese dicho token en el espacio indicado en la aplicación junto a su nueva contraseña " +
@@ -79,29 +74,15 @@ public class PasswordResetService {
             throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
         }
 
-        String[] parts = token.getToken().split("_");
-        long expiration = Long.parseLong(parts[1]);
-
-        if(Instant.now().toEpochMilli() > expiration){
-            revokeToken(token);
+        if(tokenService.isTokenExpired(token)){
+            tokenService.revokeToken(token);
             throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
         }
 
         var user = token.getUser();
         user.setPassword(passwordEncoder.encode(dto.password()));
         userRepository.save(user);
-        revokeToken(token);
+        tokenService.revokeToken(token);;
     }
 
-    /**
-     * Función auxiliar. Se encarga de revocar el token de recuperación de contraseña.
-     * Esta función no hace rollback ante una excepción controlada.
-     * @param token token de reset utilizado para la operación.
-     * */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void revokeToken(Token token) {
-        token.setExpired(true);
-        token.setRevoked(true);
-        tokenRepository.save(token);
-    }
 }

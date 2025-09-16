@@ -5,17 +5,16 @@ import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.entity.*;
 import com.UNED.APIDataMujer.enums.TokenType;
 import com.UNED.APIDataMujer.exception.NotActiveUserException;
-import com.UNED.APIDataMujer.mapper.TokenMapper;
 import com.UNED.APIDataMujer.repository.*;
 import com.UNED.APIDataMujer.service.jwt.JwtService;
 import com.UNED.APIDataMujer.service.registration.ActivationService;
+import com.UNED.APIDataMujer.service.resource.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 /**
  * Clase de implementación de la interfaz que permite a los usuarios activos
  * autentificarse. También es la encargada de ofrecer JWT a los usuarios
@@ -30,11 +29,9 @@ public class AuthServiceImpl implements AuthService{
 
     private final JwtService jwtService;
     private final ActivationService activationService;
+    private final TokenService tokenService;
 
     private final AuthenticationManager authManager;
-    private final TokenMapper tokenMapper;
-
-    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
 
     /**
@@ -94,7 +91,6 @@ public class AuthServiceImpl implements AuthService{
      * */
     private void isUserActive(User user){
         if(user.isActive()) return;
-        revokeAllUserToken(user);
         activationService.generateActivationToken(user);
         throw new NotActiveUserException("El usuario ha proporcionado las credenciales " +
                 "correctas pero no ha autentificado su cuenta. " +
@@ -111,36 +107,8 @@ public class AuthServiceImpl implements AuthService{
     private TokenResponse tokenGeneration(final User user){
         final var accessToken = jwtService.generateAccessToken(user);
         final var refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserToken(user);
-        saveUserToken(accessToken, user);
+        tokenService.revokeAllActiveTokens(user);
+        tokenService.saveToken(accessToken, user, TokenType.BEARER);
         return new TokenResponse(accessToken, refreshToken);
-    }
-
-    /**
-     * Función auxiliar. Se usa para obtener todos los tokens que no se han suspendido
-     * del usuario para revocarlos.
-     * @param user se trata del usuario a quien hay que suspenderle tokens caducados.
-     * */
-    private void revokeAllUserToken(final User user){
-        final List<Token> tokens = tokenRepository
-                .findAllValidIsFalseOrRevokedIsFalseByUserId(user.getId());
-
-        if(tokens.isEmpty()) return;
-
-        tokens.forEach(token -> {
-            token.setRevoked(true);
-            token.setExpired(true);
-        });
-        tokenRepository.saveAll(tokens);
-    }
-
-    /**
-     * Función auxiliar. Se usa para un nuevo token de acceso en la base de datos.
-     * @param jjwt contiene al token de acceso qye se almacenará en la bd
-     * @param user el usuario al que pertenece el token.
-     * */
-    private void saveUserToken(final String jjwt, final User user){
-        final var token = tokenMapper.toEntity(jjwt, user, TokenType.BEARER);
-        tokenRepository.save(token);
     }
 }
