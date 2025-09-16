@@ -81,9 +81,12 @@ public class ActivationService {
         tokenRepository.save(token);
 
         String activationLink = "https://localhost:8443/activate?token=" + tokenValue;
+        String body = String.format("Nos alegra mucho que te unas a Data Mujer. Por favor, " +
+                "activa tu cuenta desde <a href=%s>este link</a>.", activationLink);
+
         emailSendingService.sendEmail(user.getEmail(),
-                "Activa tu Cuenta",
-                "Haz click en el enlace para activar su cuenta: "+activationLink);
+                "Activación de Cuenta",
+                body, user.getUsername());
     }
 
     /**
