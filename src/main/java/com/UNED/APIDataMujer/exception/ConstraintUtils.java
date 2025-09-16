@@ -2,7 +2,11 @@ package com.UNED.APIDataMujer.exception;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+/**
+ * Clase estática simple de utilidad que averigua cual
+ * constraint de la base de datos se violó
+ * @author AHKolodin
+ * */
 public class ConstraintUtils {
 
     public static String extractFieldFromMessage(String message) {
