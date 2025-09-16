@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Bean de configuración encargada de definir rutas públicas y privadas, permisos
+ * Clase de configuración encargada de definir rutas públicas y privadas, permisos
  * necesarios, filtros de control y mecanismo de logout.
  * @author glunah2001
  * @see JwtAuthFilter

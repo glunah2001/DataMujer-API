@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * RestController encargado de escuchar las operaciones relacionadas a la
+ * RestController encargado de escuchar las operaciones relacionadas con la
  * autentificación de usuarios.
  * @author glunah2001
  * @see AuthServiceImpl
@@ -29,7 +29,7 @@ public class AuthController {
     /**
      * Función post que permite a los usuarios iniciar sesión
      * @param loginDTO dto con la información de inicio de sesión de un usuario
-     * @return un dto con los tokens de acceso y refresco
+     * @return un dto. Con los tokens de acceso y refresco
      * */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody final UserLoginDTO loginDTO){
@@ -40,7 +40,7 @@ public class AuthController {
     /**
      * Función post que permite a los usuarios renovar su token de acceso
      * @param authHeader contiene el token de refresco transportado desde el header AUTHORIZATION
-     * @return un dto con los nuevos tokens de acceso y refresco
+     * @return un dto. Con los nuevos tokens de acceso y refresco
      * */
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestHeader (HttpHeaders.AUTHORIZATION) final String authHeader){
@@ -52,7 +52,7 @@ public class AuthController {
      * Función post que permite a los usuarios solicitar un cambio de contraseña en caso
      * de olvidarla
      * @param email se trata del email en texto plano (no se manda en formato json, la capa extra en
-     * https lo mantiene seguro)
+     *              https lo mantiene seguro)
      * @return un estado 200 OK
      * */
     @PostMapping("/forgot-password")
@@ -65,7 +65,7 @@ public class AuthController {
     /**
      * Función post que permite a los usuarios ejecutar un cambio de contraseña
      * @param resetPasswordDTO se trata de token de reset más la nueva contraseña encapsulados en
-     * un dto.
+     *                         un dto.
      * @return un estado 200 OK
      * */
     @PostMapping("reset-password")

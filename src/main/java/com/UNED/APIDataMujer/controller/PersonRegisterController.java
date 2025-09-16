@@ -29,7 +29,8 @@ public class PersonRegisterController {
 
     /**
      * Función encargada del registro de personas físicas como usuarios dentro del sistema
-     * @param physicalPersonRegisterDTO contiene toda la información de la persona física para su almacenamiento
+     * @param physicalPersonRegisterDTO contiene toda la información de la persona
+     *                                  física para su almacenamiento
      * @return un estado 201 CREATED avisando de la necesidad de activar su cuenta con un correo enviado.
      * */
     @PostMapping("/physical")
@@ -46,7 +47,8 @@ public class PersonRegisterController {
 
     /**
      * Función encargada del registro de personas jurídicas como usuarios dentro del sistema
-     * @param legalPersonRegisterDTO contiene toda la información de la persona legal para su almacenamiento
+     * @param legalPersonRegisterDTO contiene toda la información de
+     *                               la persona legal para su almacenamiento
      * @return un estado 201 CREATED avisando de la necesidad de activar su cuenta con un correo enviado.
      * */
     @PostMapping("/legal")

@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 /**
  * Clase de implementación de la interfaz que permite a los usuarios activos
- * autentificarse. Tambien es la encargada de ofrecer JWT a los usuarios
- * mediante su JWT de refresco cuando el de acceso esté apunto de caducar.
+ * autentificarse. También es la encargada de ofrecer JWT a los usuarios
+ * mediante su JWT de refresco cuando el de acceso esté a punto de caducar.
  *
  * @author glunah2001
  * @see AuthService
@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     /**
-     * Función auxiliar. Se usa para verificar que el usuario que intenta iniciar.
+     * Función auxiliar. Se usa para verificar que el usuario que intenta iniciar
      * sesión se encuentre activo para abordar los últimos pasos de la autentificación.
      * @param user verifica su estado.
      * @throws NotActiveUserException en caso de que el usuario no esté activo
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService{
      * Función auxiliar. Se usa para generar los tokens de acceso y refresco del user
      * autenticado.
      * @param user se necesita el usuario para conocer quien es el propietarios de los
-     * tokens en la BD.
+     *             tokens en la BD.
      * @return TokenResponse con el accessToken y refreshToken.
      * */
     private TokenResponse tokenGeneration(final User user){

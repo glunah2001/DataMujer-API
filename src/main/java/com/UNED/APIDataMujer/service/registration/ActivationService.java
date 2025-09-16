@@ -72,7 +72,7 @@ public class ActivationService {
      * token de activación y generar un correo que redirija al usuario a
      * dicha operación.
      * @param user El usuario cuya cuenta está inactiva y se le debe ejecutar esta
-     * operación.
+     *             operación.
      * */
     public void generateActivationToken(final User user) {
         long expiration = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();

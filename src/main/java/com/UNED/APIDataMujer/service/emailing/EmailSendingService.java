@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
- * Clase encargada del envio de correos a los usuarios indicados mediante
+ * Clase encargada del envío de correos a los usuarios indicados mediante
  * su correo desde un correo autorizado por el patrocinador/propietario.
  * @author glunah2001
  * */

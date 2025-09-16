@@ -37,10 +37,11 @@ public class PasswordResetService {
 
     /**
      * Función inicial del proceso. Encargada de encontrar el usuario con contraseña
-     * a restablecer mediante su correo registrado. Enviá un correo a dicha dirección
+     * a restablecer mediante su correo registrado. Envía un correo a dicha dirección
      * con el procedimiento para restablecimiento de Contraseña.
      * @param email dirección electronica que debe estar registrada para enviar un
-     * token de recuperación de contraseña que se usará en la desktop app.
+     *              token de recuperación de contraseña que se usará
+     *              en el desktop app.
      * @throws UsernameNotFoundException en caso de que el email no se encuentre registrado
      * */
     public void forgotPassword(final String email){
@@ -50,7 +51,7 @@ public class PasswordResetService {
                         "ningún usuario actualmente."));
 
         long expiration = Instant.now().plus(15, ChronoUnit.MINUTES).toEpochMilli();
-        final String resetToken = UUID.randomUUID().toString() +"_"+ expiration;
+        final String resetToken = UUID.randomUUID() +"_"+ expiration;
         final Token token = tokenMapper.toEntity(resetToken, user, TokenType.PASSWORD_RESET);
         tokenRepository.save(token);
 
@@ -64,10 +65,10 @@ public class PasswordResetService {
     /**
      * Esta función es la encargada de hacer el reseteo de la contraseña, reemplazando
      * el valor antiguo por una nueva clave de acceso.
-     * @param dto Un dto que contiene el token enviado por correo y que se encuentra
-     * registrado; y la nueva contraseña.
-     * @throws IllegalArgumentException en caso de que el token de restablecimiento sea
-     * inválido o caducado
+     * @param dto Un dto. Que contiene el token enviado por correo y que se encuentra
+     *            registrado; y la nueva contraseña.
+     * @throws IllegalArgumentException en caso de que el token de restablecimiento
+     * sea inválido o caducado
      * */
     public void resetPassword(final ResetPasswordDTO dto){
         final var token = tokenRepository.findByToken(dto.token())

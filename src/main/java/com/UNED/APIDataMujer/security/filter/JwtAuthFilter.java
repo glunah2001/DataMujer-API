@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Clase encargada de filtrar todas las peticiones. Tiene mayor enfasis en aquellas
+ * Clase encargada de filtrar todas las peticiones. Tiene mayor énfasis en aquellas
  * dirigidas a rutas protegidas
  * @author glunah2001
  * */

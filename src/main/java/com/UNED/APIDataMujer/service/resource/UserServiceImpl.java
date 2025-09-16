@@ -34,10 +34,10 @@ public class UserServiceImpl implements UserService{
     private final PersonMapper personMapper;
 
     /**
-     * Función de interfaz que obtiene la información del perfil propio del usuario..
+     * Función de interfaz que obtiene la información del perfil propio del usuario.
      * @param authentication credenciales de autentificación del usuario con de la que
-     * se extrae el username.
-     * @return el dto con la información no comprometedora completa de la persona física o legal
+     *                       se extrae el username.
+     * @return el dto. Con la información no comprometedora completa de la persona física o legal
      * */
     @Override
     public Object getMyProfile(final Authentication authentication) {
@@ -53,9 +53,10 @@ public class UserServiceImpl implements UserService{
     /**
      * Función de interfaz que permite actualizar la información propia del usuario.
      * @param authentication credenciales de autentificación del usuario con de la que
-     * se extrae el username.
-     * @param dto Dto con la nueva información que el usuario (persona legal) desea actualizar.
-     * @return el dto con la información no comprometedora completa de la persona legal
+     *                       se extrae el username.
+     * @param dto Dto. Con la nueva información que el usuario (persona legal) desea
+     *            actualizar.
+     * @return el dto. Con la información no comprometedora completa de la persona legal
      * @throws IllegalArgumentException en caso de que la persona legal no se encuentre en la bd.
      * */
     @Override
@@ -80,7 +81,8 @@ public class UserServiceImpl implements UserService{
      * Función de interfaz que permite actualizar la información propia del usuario.
      * @param authentication credenciales de autentificación del usuario con de la que
      * se extrae el username.
-     * @param dto Dto con la nueva información que el usuario (persona física) desea actualizar.
+     * @param dto Dto. Con la nueva información que el usuario (persona física)
+     *            desea actualizar.
      * @return el dto con la información no comprometedora completa de la persona física
      * @throws IllegalArgumentException en caso de que la persona física no se encuentre en la bd.
      * */
@@ -111,7 +113,7 @@ public class UserServiceImpl implements UserService{
     /**
      * Función auxiliar que extrae el Usuario de la BD mediante su ID
      * @param username que identifica al usuario.
-     * @return el usuario extraido de la BD.
+     * @return el usuario sacado de la BD.
      * */
     private User getUserByUsername(String username){
         return userRepository.findByUsername(username)
@@ -122,7 +124,7 @@ public class UserServiceImpl implements UserService{
     /**
      * Función auxiliar que actualiza los datos comunes del usuario (usuario y persona abstracta)
      * @param username que identifica al usuario.
-     * @param dto Dto que contiene todos los datos comunes del usuario.
+     * @param dto Dto. Que contiene todos los datos comunes del usuario.
      * @return User con sus datos actualizados
      * */
     private User updateCommonData(String username, CommonUpdateDTO dto){
@@ -144,7 +146,7 @@ public class UserServiceImpl implements UserService{
      * propietario una persona física
      * @param user usuario recuperado de la BD ligado con la persona física a buscar.
      * @return retorna los datos de la persona física en un dto.
-     * @throws IllegalArgumentException en caso que la persona física buscada no exista en la bd.
+     * @throws IllegalArgumentException en caso de que la persona física buscada no exista en la bd.
      * */
     private PhysicalPersonDTO getPhysicalProfile(User user){
         var person = physicalPersonRepository.findById(user.getPerson().getId())
@@ -159,7 +161,7 @@ public class UserServiceImpl implements UserService{
      * propietario una persona física
      * @param user usuario recuperado de la BD ligado con la persona jurídica a buscar.
      * @return retorna los datos de la persona jurídica en un dto.
-     * @throws IllegalArgumentException en caso que la persona jurídica buscada no exista en la bd.
+     * @throws IllegalArgumentException en caso de que la persona jurídica buscada no exista en la bd.
      * */
     private LegalPersonDTO getLegalProfile(User user){
         var person = legalPersonRepository.findById(user.getPerson().getId())
