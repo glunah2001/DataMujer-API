@@ -32,7 +32,7 @@ public class UserMapper {
                 .username(dto.username())
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password()))
-                .role(Role.ROLE_GUEST)
+                .role(Role.ROLE_STANDARD)
                 .registrationDate(LocalDate.now())
                 .isActive(false)
                 .isContributor(false)
