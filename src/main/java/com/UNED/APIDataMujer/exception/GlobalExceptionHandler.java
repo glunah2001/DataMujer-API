@@ -32,6 +32,24 @@ public class GlobalExceptionHandler {
     private final ApiErrorMapper apiErrorMapper;
 
     /**
+     * Clase encargada de manejar la excepción personalizada ResourceNotFound. Estas se emiten
+     * cuando un recurso que se busca no es encontrado en la BD.
+     * @param ex la excepción en cuestión.
+     * @return un dto. Con los detalles del error.
+     * */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> ResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request){
+        ApiError error = apiErrorMapper.toDto(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
+    /**
      * Clase encargada de manejar la excepción personalizada NotActiveUser. Estas se emiten
      * cuando un usuario con una cuenta inactiva intenta iniciar sesión.
      * @param ex la excepción en cuestión.

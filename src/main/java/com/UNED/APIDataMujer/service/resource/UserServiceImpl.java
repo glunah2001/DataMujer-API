@@ -1,8 +1,8 @@
 package com.UNED.APIDataMujer.service.resource;
 
-import com.UNED.APIDataMujer.dto.register.CommonUpdateDTO;
-import com.UNED.APIDataMujer.dto.register.LegalPersonUpdateDTO;
-import com.UNED.APIDataMujer.dto.register.PhysicalPersonUpdateDTO;
+import com.UNED.APIDataMujer.dto.request.CommonUpdateDTO;
+import com.UNED.APIDataMujer.dto.request.LegalPersonUpdateDTO;
+import com.UNED.APIDataMujer.dto.request.PhysicalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
 import com.UNED.APIDataMujer.entity.User;
@@ -41,13 +41,22 @@ public class UserServiceImpl implements UserService{
      * */
     @Override
     public Object getMyProfile(final Authentication authentication) {
-        String username = authentication.getName();
-        var user = getUserByUsername(username);
+        var user = getMyUser(authentication);
 
         return switch(user.getPerson().getPersonType()){
             case FISICA -> getPhysicalProfile(user);
             case LEGAL -> getLegalProfile(user);
         };
+    }
+
+    /**
+     * Función de interfaz que obtiene la entidad User del propio usuario.
+     * @param authentication credenciales de autentificación del usuario.
+     * @return entidad User de la BD.
+     * */
+    @Override
+    public User getMyUser(final Authentication authentication) {
+        return getUserByUsername(authentication.getName());
     }
 
     /**
@@ -63,8 +72,7 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public LegalPersonDTO updateMyLegalProfile(final Authentication authentication,
                                                final LegalPersonUpdateDTO dto) {
-        String username = authentication.getName();
-        var user = updateCommonData(username, dto.commonUpdateDTO());
+        var user = updateCommonData(authentication, dto.commonUpdateDTO());
 
         var legalPerson = legalPersonRepository.findById(user.getPerson().getId())
                 .orElseThrow(() ->
@@ -90,8 +98,7 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public PhysicalPersonDTO updateMyPhysicalProfile(final Authentication authentication,
                                                      final PhysicalPersonUpdateDTO dto) {
-        String username = authentication.getName();
-        var user = updateCommonData(username, dto.commonUpdateDTO());
+        var user = updateCommonData(authentication, dto.commonUpdateDTO());
 
         var physicalPerson = physicalPersonRepository.findById(user.getPerson().getId())
                 .orElseThrow(() ->
@@ -123,12 +130,12 @@ public class UserServiceImpl implements UserService{
 
     /**
      * Función auxiliar que actualiza los datos comunes del usuario (usuario y persona abstracta)
-     * @param username que identifica al usuario.
+     * @param authentication credenciales del usuario.
      * @param dto Dto. Que contiene todos los datos comunes del usuario.
      * @return User con sus datos actualizados
      * */
-    private User updateCommonData(String username, CommonUpdateDTO dto){
-        var user = getUserByUsername(username);
+    private User updateCommonData(Authentication authentication, CommonUpdateDTO dto){
+        var user = getMyUser(authentication);
         var person = user.getPerson();
 
         person.setPhoneNumber(dto.phoneNumber());
@@ -136,8 +143,7 @@ public class UserServiceImpl implements UserService{
         person.setLocation(dto.location());
         user.setEmail(dto.email());
 
-
-        var updatePerson = personRepository.save(person);
+        personRepository.save(person);
         return userRepository.save(user);
     }
 

@@ -1,8 +1,8 @@
 package com.UNED.APIDataMujer.mapper;
 
-import com.UNED.APIDataMujer.dto.register.CommonRegisterDTO;
-import com.UNED.APIDataMujer.dto.register.LegalPersonRegisterDTO;
-import com.UNED.APIDataMujer.dto.register.PhysicalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.CommonRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.LegalPersonRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.PhysicalPersonRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
 import com.UNED.APIDataMujer.entity.LegalPerson;

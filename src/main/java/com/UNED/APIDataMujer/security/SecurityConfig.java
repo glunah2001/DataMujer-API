@@ -1,19 +1,28 @@
 package com.UNED.APIDataMujer.security;
 
+import com.UNED.APIDataMujer.dto.ApiError;
 import com.UNED.APIDataMujer.entity.Token;
+import com.UNED.APIDataMujer.mapper.ApiErrorMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.security.filter.JwtAuthFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.io.IOException;
 
 /**
  * Clase de configuración encargada de definir rutas públicas y privadas, permisos
@@ -23,11 +32,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * */
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig{
 
     private final AuthenticationProvider authProvider;
     private final JwtAuthFilter jwtAuthFilter;
     private final TokenRepository tokenRepository;
+    private final ApiErrorMapper apiErrorMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Bean definido para definir varios aspectos de seguridad necesarios para la operabilidad
@@ -52,6 +64,20 @@ public class SecurityConfig{
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request,
+                                                   response,
+                                                   authException) ->
+                                handleError(HttpStatus.UNAUTHORIZED,
+                                        "No estás autenticado",
+                                        request, response))
+                        .accessDeniedHandler((request,
+                                              response,
+                                              accessDeniedException) ->
+                                handleError(HttpStatus.FORBIDDEN,
+                                        "No tienes permisos para realizar esta acción",
+                                        request, response))
+                )
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .addLogoutHandler((request,
@@ -84,5 +110,26 @@ public class SecurityConfig{
         foundToken.setRevoked(true);
         foundToken.setExpired(true);
         tokenRepository.save(foundToken);
+    }
+
+    /**Función auxiliar encargada de escribir y enviar errores en el handler
+     * del SecurityFilterChain.
+     * @param response respuesta a enviar al cliente
+     * @param request request enviada por el cliente
+     * @param status estatus del error
+     * @param message mensaje del error
+     * */
+    private void handleError(HttpStatus status,
+                             String message,
+                             HttpServletRequest request,
+                             HttpServletResponse response) throws IOException {
+        ApiError error = apiErrorMapper.toDto(
+                status,
+                "Usted no tiene los permisos de acceso necesarios para realizar esta operación.",
+                request.getServletPath()
+        );
+        response.setContentType("application/json");
+        response.setStatus(status.value());
+        response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 }

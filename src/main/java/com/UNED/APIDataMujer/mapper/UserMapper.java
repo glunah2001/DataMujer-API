@@ -1,6 +1,6 @@
 package com.UNED.APIDataMujer.mapper;
 
-import com.UNED.APIDataMujer.dto.register.CommonRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.CommonRegisterDTO;
 import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.enums.Role;
