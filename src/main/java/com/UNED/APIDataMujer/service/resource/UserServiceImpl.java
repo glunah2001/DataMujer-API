@@ -5,6 +5,7 @@ import com.UNED.APIDataMujer.dto.request.LegalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.PhysicalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
+import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.mapper.PersonMapper;
 import com.UNED.APIDataMujer.repository.LegalPersonRepository;
@@ -16,6 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Clase encargada de la consulta y modificación de información de los usuarios registrados.
@@ -114,8 +119,76 @@ public class UserServiceImpl implements UserService{
         return personMapper.toDto(user, updatedPhysicalPerson);
     }
 
+    @Override
+    public Object findByUsername(String username) {
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new
+                        UsernameNotFoundException("El usuario \""+username+"\" no se ha encontrado"));
+        var person = user.getPerson();
 
+        return switch(person.getPersonType()) {
+            case FISICA -> {
+                var pp = physicalPersonRepository.findById(person.getId())
+                        .orElseThrow(() -> new
+                                IllegalArgumentException("Persona física no encontrada"));
+                yield personMapper.toDto(user, pp);
+            }
+            case LEGAL -> {
+                var pl = legalPersonRepository.findById(person.getId())
+                        .orElseThrow(() -> new
+                                IllegalArgumentException("Persona jurídica no encontrada"));
+                yield personMapper.toDto(user, pl);
+            }
+        };
+    }
 
+    @Override
+    public PhysicalPersonDTO findByNationalId(String nationalId) {
+        var pp = physicalPersonRepository.findByNationalId(nationalId)
+                .orElseThrow(() -> new IllegalArgumentException("La persona física con " +
+                        "identificación "+nationalId+" no fue encontrada."));
+        var user = getUserByPerson(pp.getPerson());
+        return personMapper.toDto(user, pp);
+    }
+
+    @Override
+    public LegalPersonDTO findByLegalId(String legalId) {
+        var lp = legalPersonRepository.findByLegalId(legalId)
+                .orElseThrow(() -> new IllegalArgumentException("La persona jurídica con " +
+                        "identificación "+legalId+" no fue encontrada."));
+        var user = getUserByPerson(lp.getPerson());
+        return personMapper.toDto(user, lp);
+    }
+
+    @Override
+    public List<PhysicalPersonDTO> findByName(String name) {
+        var nameSearch = physicalPersonRepository.findByNameContainingIgnoreCase(name);
+        return mapListToDto(nameSearch,
+                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp));
+    }
+
+    @Override
+    public List<LegalPersonDTO> findByBusinessName(String name) {
+        var businessNameSearch = legalPersonRepository.findByBusinessNameContainingIgnoreCase(name);
+        return mapListToDto(businessNameSearch,
+                lp -> personMapper.toDto(getUserByPerson(lp.getPerson()), lp));
+    }
+
+    @Override
+    public List<PhysicalPersonDTO> findBySurname(String surname) {
+        var results = new ArrayList<PhysicalPersonDTO>();
+        var fistSurnamesSearch = physicalPersonRepository
+                .findByFirstSurnameContainingIgnoreCase(surname);
+        var secondSurnameSearch = physicalPersonRepository
+                .findBySecondSurnameContainingIgnoreCase(surname);
+
+        results.addAll(mapListToDto(fistSurnamesSearch,
+                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp)));
+        results.addAll(mapListToDto(secondSurnameSearch,
+                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp)));
+
+        return results;
+    }
 
     /**
      * Función auxiliar que extrae el Usuario de la BD mediante su ID
@@ -142,8 +215,6 @@ public class UserServiceImpl implements UserService{
         person.setCountry(dto.country());
         person.setLocation(dto.location());
         user.setEmail(dto.email());
-
-        personRepository.save(person);
         return userRepository.save(user);
     }
 
@@ -175,5 +246,17 @@ public class UserServiceImpl implements UserService{
                         new IllegalArgumentException("Ocurrió un error al intentar obtener su información"));
 
         return personMapper.toDto(user, person);
+    }
+
+    private User getUserByPerson(Person person){
+        return userRepository.findByPerson(person)
+                .orElseThrow(() -> new
+                        IllegalArgumentException("El usuario no se ha encontrado."));
+    }
+
+    private <T, R> List<R> mapListToDto(List<T> list, Function<T, R> mapperFunction){
+        return list.stream()
+                .map(mapperFunction)
+                .toList();
     }
 }

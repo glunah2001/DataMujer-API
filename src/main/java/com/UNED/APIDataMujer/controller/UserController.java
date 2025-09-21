@@ -43,7 +43,7 @@ public class UserController {
      * @return Dto. Con toda su información actualizada.
      * */
     @PutMapping("/me/physical")
-    public ResponseEntity<?> updateMyProfile(final Authentication auth,
+    public ResponseEntity<?> updateMyPhysicalProfile(final Authentication auth,
                                              @Valid @RequestBody PhysicalPersonUpdateDTO updateDto){
         final var dto = userService.updateMyPhysicalProfile(auth, updateDto);
         return ResponseEntity.ok(dto);
@@ -58,9 +58,39 @@ public class UserController {
      * @return Dto. Con toda su información actualizada.
      * */
     @PutMapping("me/legal")
-    public ResponseEntity<?> updateMyProfile(final Authentication auth,
+    public ResponseEntity<?> updateMyLegalProfile(final Authentication auth,
                                              @Valid @RequestBody LegalPersonUpdateDTO updateDto){
         final var dto = userService.updateMyLegalProfile(auth, updateDto);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/search/username")
+    public ResponseEntity<?> findByUsername(@RequestParam String username) {
+        return ResponseEntity.ok(userService.findByUsername(username));
+    }
+
+    @GetMapping("/search/national-id")
+    public ResponseEntity<?> findByNationalId(@RequestParam String id) {
+        return ResponseEntity.ok(userService.findByNationalId(id));
+    }
+
+    @GetMapping("/search/legal-id")
+    public ResponseEntity<?> findByLegalId(@RequestParam String id) {
+        return ResponseEntity.ok(userService.findByLegalId(id));
+    }
+
+    @GetMapping("/search/name")
+    public ResponseEntity<?> findByName(@RequestParam String name) {
+        return ResponseEntity.ok(userService.findByName(name));
+    }
+
+    @GetMapping("/search/surname")
+    public ResponseEntity<?> findBySurname(@RequestParam String surname) {
+        return ResponseEntity.ok(userService.findBySurname(surname));
+    }
+
+    @GetMapping("/search/business")
+    public ResponseEntity<?> findByBusinessName(@RequestParam String businessName) {
+        return ResponseEntity.ok(userService.findByBusinessName(businessName));
     }
 }
