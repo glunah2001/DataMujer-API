@@ -13,15 +13,15 @@ public record PhysicalPersonUpdateDTO(
         CommonUpdateDTO commonUpdateDTO,
 
         @NotBlank(message = "El Dato \"Primer Apellido\" es obligatorio.")
-        @Size(max = 15, message = "El dato no puede ser mayor a 15 caracteres")
+        @Size(max = 25, message = "El dato no puede ser mayor a 15 caracteres")
         String firstSurname,
 
         @NotBlank(message = "El Dato \"Segundo Apellido\" es obligatorio.")
-        @Size(max = 15, message = "El dato no puede ser mayor a 15 caracteres")
+        @Size(max = 25, message = "El dato no puede ser mayor a 15 caracteres")
         String secondSurname,
 
         @NotBlank(message = "El Dato \"Nombre\" es obligatorio.")
-        @Size(max = 15, message = "El dato no puede ser mayor a 15 caracteres")
+        @Size(max = 25, message = "El dato no puede ser mayor a 15 caracteres")
         String name,
 
         @NotBlank(message = "El Dato \"Profesión\" es obligatorio.")

@@ -68,6 +68,16 @@ public class ActivityServiceImpl implements ActivityService {
         final var activity = activityRepository.save(newActivity);
 
         final var user = userService.findMyUser(auth);
+
+        boolean existsConflict = volunteeringRepository.existsByUserAndOverlappingShift(
+                user.getId(),
+                startDate,
+                endDate);
+
+        if(existsConflict)
+            throw new IllegalArgumentException("La actividad no se pudo crear debido a que usted se encuentra anotado " +
+                    "como voluntario en una actividad pendiente.");
+
         var volunteering = volunteeringMapper.toEntity(user, activity);
         volunteeringRepository.save(volunteering);
 

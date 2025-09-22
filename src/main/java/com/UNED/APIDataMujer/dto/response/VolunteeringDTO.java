@@ -1,6 +1,6 @@
 package com.UNED.APIDataMujer.dto.response;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record VolunteeringDTO(
     long id,
@@ -10,6 +10,7 @@ public record VolunteeringDTO(
     String description,
     String location,
     boolean isOnSite,
-    LocalDate volunteerDate,
+    LocalDateTime startShift,
+    LocalDateTime endShift,
     String activityRole
 ) { }

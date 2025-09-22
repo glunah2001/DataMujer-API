@@ -8,8 +8,6 @@ import com.UNED.APIDataMujer.entity.Volunteering;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-
 /**
  * Clase encargada de mapear un DTO. A entidad Volunteering y viceversa.
  * @author glunah2001
@@ -30,7 +28,8 @@ public class VolunteeringMapper {
         return Volunteering.builder()
                 .activity(activity)
                 .user(user)
-                .volunteerDate(LocalDate.from(activity.getStartDate()))
+                .startShift(activity.getStartDate())
+                .endShift(activity.getEndDate())
                 .activityRole("Organizador")
                 .build();
     }
@@ -39,7 +38,8 @@ public class VolunteeringMapper {
         return Volunteering.builder()
                 .activity(activity)
                 .user(user)
-                .volunteerDate(dto.volunteeringDate())
+                .startShift(dto.startShift())
+                .endShift(dto.endShift())
                 .activityRole(dto.activityRole())
                 .build();
     }
@@ -58,7 +58,8 @@ public class VolunteeringMapper {
                 volunteering.getActivity().getDescription(),
                 volunteering.getActivity().getLocation(),
                 volunteering.getActivity().isOnSite(),
-                volunteering.getVolunteerDate(),
+                volunteering.getStartShift(),
+                volunteering.getEndShift(),
                 volunteering.getActivityRole()
         );
     }

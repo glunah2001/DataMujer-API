@@ -1,6 +1,7 @@
 package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Volunteering;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
@@ -68,11 +70,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
 
     @Override
     @Transactional
-    public long insertVolunteering(List<VolunteeringRegisterDTO> list) {
+    public long insertVolunteering(VolunteeringWrapperDTO dto) {
+        var list = dto.volunteering();
         if(list.isEmpty())
             throw new IllegalArgumentException("Información de voluntariados vacía");
 
-        var activityId = list.getFirst().activityId();
+        var activityId = dto.activityId();
         if(!sameActivityVolunteering(activityId, list))
             throw new IllegalArgumentException(("Inconsistencia de datos detectada: Voluntariados para " +
                     "diferentes actividades."));
@@ -84,14 +87,45 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     @Override
     @Transactional
     public VolunteeringDTO insertVolunteering(VolunteeringRegisterDTO dto) {
-        var id = dto.activityId();
+        final var activity = getActivity(dto.activityId());
         var username = dto.username();
 
-        final var activity = getActivity(id);
+        if(activity.isFinalized())
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" se está registrando en una actividad clausurada.");
+
+        if(dto.startShift().isBefore(activity.getStartDate()) ||
+           dto.endShift().isAfter(activity.getEndDate()))
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" se está registrando fuera del rango de la actividad.");
+
+        var shiftLength = ChronoUnit.HOURS.between(dto.startShift(), dto.endShift());
+        if(shiftLength < 1 || shiftLength> 8)
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" debe abarcar una cantidad de horas razonables. " +
+                    "De 1 a 8 horas por turno.");
+
+        if(!dto.startShift().isBefore(dto.endShift()))
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" indica que la fecha de inicio está después de la fecha de " +
+                    "cierre de su turno.");
+
         final var user = userService.findUserByUsername(username);
+
+        var existsConflict = volunteeringRepository.existsByUserAndOverlappingShift(
+                user.getId(),
+                dto.startShift(),
+                dto.endShift()
+                );
+        if(existsConflict)
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" se está registrando en una fecha y hora en la que " +
+                    "ya se encuentra inscrito en otro voluntariado");
+
 
         var volunteering = volunteeringMapper.toEntity(user, activity, dto);
         var myVolunteering = volunteeringRepository.save(volunteering);
+
         return volunteeringMapper.toDto(myVolunteering);
     }
 
