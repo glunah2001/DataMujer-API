@@ -10,17 +10,20 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface UserService {
-    Object getMyProfile(Authentication authentication);
-    User getMyUser(Authentication authentication);
+    Object finMyProfile(Authentication authentication);
+    User findMyUser(Authentication authentication);
+    User findUserByUsername(String username);
 
-    LegalPersonDTO updateMyLegalProfile(Authentication authentication, LegalPersonUpdateDTO dto);
-    PhysicalPersonDTO updateMyPhysicalProfile(Authentication authentication, PhysicalPersonUpdateDTO dto);
+    LegalPersonDTO updateMyLegalProfile(Authentication authentication,
+                                        LegalPersonUpdateDTO dto);
+    PhysicalPersonDTO updateMyPhysicalProfile(Authentication authentication,
+                                              PhysicalPersonUpdateDTO dto);
 
-    Object findByUsername(String username);
-    PhysicalPersonDTO findByNationalId(String nationalId);
-    LegalPersonDTO findByLegalId(String legalId);
+    Object findPersonByUsername(String username);
+    PhysicalPersonDTO findPersonByNationalId(String nationalId);
+    LegalPersonDTO findPersonByLegalId(String legalId);
 
-    List<PhysicalPersonDTO> findByName(String name);
-    List<LegalPersonDTO> findByBusinessName(String name);
-    List<PhysicalPersonDTO> findBySurname(String surname);
+    List<PhysicalPersonDTO> findPersonByName(String name);
+    List<LegalPersonDTO> findPersonByBusinessName(String name);
+    List<PhysicalPersonDTO> findPersonBySurname(String surname);
 }

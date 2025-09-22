@@ -45,8 +45,8 @@ public class UserServiceImpl implements UserService{
      * @return el dto. Con la información no comprometedora completa de la persona física o legal
      * */
     @Override
-    public Object getMyProfile(final Authentication authentication) {
-        var user = getMyUser(authentication);
+    public Object finMyProfile(final Authentication authentication) {
+        var user = findMyUser(authentication);
 
         return switch(user.getPerson().getPersonType()){
             case FISICA -> getPhysicalProfile(user);
@@ -60,8 +60,13 @@ public class UserServiceImpl implements UserService{
      * @return entidad User de la BD.
      * */
     @Override
-    public User getMyUser(final Authentication authentication) {
+    public User findMyUser(final Authentication authentication) {
         return getUserByUsername(authentication.getName());
+    }
+
+    @Override
+    public User findUserByUsername(String username) {
+        return getUserByUsername(username);
     }
 
     /**
@@ -120,7 +125,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Object findByUsername(String username) {
+    public Object findPersonByUsername(String username) {
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new
                         UsernameNotFoundException("El usuario \""+username+"\" no se ha encontrado"));
@@ -143,7 +148,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public PhysicalPersonDTO findByNationalId(String nationalId) {
+    public PhysicalPersonDTO findPersonByNationalId(String nationalId) {
         var pp = physicalPersonRepository.findByNationalId(nationalId)
                 .orElseThrow(() -> new IllegalArgumentException("La persona física con " +
                         "identificación "+nationalId+" no fue encontrada."));
@@ -152,7 +157,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public LegalPersonDTO findByLegalId(String legalId) {
+    public LegalPersonDTO findPersonByLegalId(String legalId) {
         var lp = legalPersonRepository.findByLegalId(legalId)
                 .orElseThrow(() -> new IllegalArgumentException("La persona jurídica con " +
                         "identificación "+legalId+" no fue encontrada."));
@@ -161,21 +166,21 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<PhysicalPersonDTO> findByName(String name) {
+    public List<PhysicalPersonDTO> findPersonByName(String name) {
         var nameSearch = physicalPersonRepository.findByNameContainingIgnoreCase(name);
         return mapListToDto(nameSearch,
                 pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp));
     }
 
     @Override
-    public List<LegalPersonDTO> findByBusinessName(String name) {
+    public List<LegalPersonDTO> findPersonByBusinessName(String name) {
         var businessNameSearch = legalPersonRepository.findByBusinessNameContainingIgnoreCase(name);
         return mapListToDto(businessNameSearch,
                 lp -> personMapper.toDto(getUserByPerson(lp.getPerson()), lp));
     }
 
     @Override
-    public List<PhysicalPersonDTO> findBySurname(String surname) {
+    public List<PhysicalPersonDTO> findPersonBySurname(String surname) {
         var results = new ArrayList<PhysicalPersonDTO>();
         var fistSurnamesSearch = physicalPersonRepository
                 .findByFirstSurnameContainingIgnoreCase(surname);
@@ -208,7 +213,7 @@ public class UserServiceImpl implements UserService{
      * @return User con sus datos actualizados
      * */
     private User updateCommonData(Authentication authentication, CommonUpdateDTO dto){
-        var user = getMyUser(authentication);
+        var user = findMyUser(authentication);
         var person = user.getPerson();
 
         person.setPhoneNumber(dto.phoneNumber());

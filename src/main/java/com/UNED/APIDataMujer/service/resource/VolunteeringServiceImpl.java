@@ -1,8 +1,10 @@
 package com.UNED.APIDataMujer.service.resource;
 
+import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Volunteering;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
 import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,22 +27,18 @@ import java.util.List;
 public class VolunteeringServiceImpl implements VolunteeringService{
 
     private final UserService userService;
+    private final ActivityService activityService;
+
     private final VolunteeringMapper volunteeringMapper;
     private final VolunteeringRepository volunteeringRepository;
 
-    /**
-     * Función de interfaz. Esta función se usa solo al crear una nueva actividad.
-     * La persona que crea dicha actividad se le asigna el título de "Organizador"
-     * de la actividad.
-     * @param auth credenciales donde se extrae el usuario que creó la actividad
-     * @param activity actividad registrada en la BD.
-     * */
     @Override
-    @Transactional
-    public void insertOrganizerVolunteering(final Authentication auth, Activity activity) {
-        final var user = userService.getMyUser(auth);
-        var newVolunteering = volunteeringMapper.toEntity(user, activity);
-        volunteeringRepository.save(newVolunteering);
+    public VolunteeringDTO getVolunteering(long id) {
+        var volunteering = volunteeringRepository.findById(id)
+                .orElseThrow(() -> new
+                        ResourceNotFoundException("El voluntariado referenciado con " +
+                        "id "+ id +" no se ha encontrado"));
+        return volunteeringMapper.toDto(volunteering);
     }
 
     /**
@@ -51,7 +49,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * */
     @Override
     public List<VolunteeringDTO> getMyPendingVolunteering(Authentication auth) {
-        var user = userService.getMyUser(auth);
+        final var user = userService.findMyUser(auth);
         var volunteering = volunteeringRepository.findByUserIdAndActivityIsFinalizedFalse(user.getId());
         return toDtoStreamConverter(volunteering);
     }
@@ -68,6 +66,35 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return toDtoStreamConverter(volunteering);
     }
 
+    @Override
+    @Transactional
+    public long insertVolunteering(List<VolunteeringRegisterDTO> list) {
+        if(list.isEmpty())
+            throw new IllegalArgumentException("Información de voluntariados vacía");
+
+        var activityId = list.getFirst().activityId();
+        if(!sameActivityVolunteering(activityId, list))
+            throw new IllegalArgumentException(("Inconsistencia de datos detectada: Voluntariados para " +
+                    "diferentes actividades."));
+
+        list.forEach(this::insertVolunteering);
+        return activityId;
+    }
+
+    @Override
+    @Transactional
+    public VolunteeringDTO insertVolunteering(VolunteeringRegisterDTO dto) {
+        var id = dto.activityId();
+        var username = dto.username();
+
+        final var activity = getActivity(id);
+        final var user = userService.findUserByUsername(username);
+
+        var volunteering = volunteeringMapper.toEntity(user, activity, dto);
+        var myVolunteering = volunteeringRepository.save(volunteering);
+        return volunteeringMapper.toDto(myVolunteering);
+    }
+
     /**
      * Función auxiliar encargada de llamar al mapper de voluntariados para convertir
      * entidades a DTO. Usando streams.
@@ -78,5 +105,14 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return volunteering.stream()
                 .map(volunteeringMapper::toDto)
                 .toList();
+    }
+
+    private boolean sameActivityVolunteering(long activityId, List<VolunteeringRegisterDTO> list){
+        return list.stream()
+                .allMatch(dto -> dto.activityId() == activityId);
+    }
+
+    private Activity getActivity(long id){
+        return activityService.getActivity(id);
     }
 }

@@ -54,7 +54,7 @@ public class ActivityController {
      * */
     @GetMapping("/{id}")
     public ResponseEntity<?> getActivity(@PathVariable long id){
-        var activity = activityService.getActivity(id);
+        var activity = activityService.getActivityDto(id);
         return ResponseEntity.ok(activity);
     }
 

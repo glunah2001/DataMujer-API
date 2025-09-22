@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.mapper;
 
+import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.User;
@@ -31,6 +32,15 @@ public class VolunteeringMapper {
                 .user(user)
                 .volunteerDate(LocalDate.from(activity.getStartDate()))
                 .activityRole("Organizador")
+                .build();
+    }
+
+    public Volunteering toEntity(User user, Activity activity, VolunteeringRegisterDTO dto){
+        return Volunteering.builder()
+                .activity(activity)
+                .user(user)
+                .volunteerDate(dto.volunteeringDate())
+                .activityRole(dto.activityRole())
                 .build();
     }
 

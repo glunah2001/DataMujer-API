@@ -2,9 +2,12 @@ package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.request.ActivityRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.ActivityDTO;
+import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ActivityMapper;
+import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
 import com.UNED.APIDataMujer.repository.ActivityRepository;
+import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -24,8 +27,12 @@ import java.time.LocalDateTime;
 public class ActivityServiceImpl implements ActivityService {
 
     private final ActivityMapper activityMapper;
+    private final VolunteeringMapper volunteeringMapper;
+
     private final ActivityRepository activityRepository;
-    private final VolunteeringService volunteeringService;
+    private final VolunteeringRepository volunteeringRepository;
+
+    private final UserService userService;
 
     /**
      * Función de interfaz encargada de crear una nueva actividad y
@@ -60,7 +67,9 @@ public class ActivityServiceImpl implements ActivityService {
         var newActivity = activityMapper.toEntity(dto);
         final var activity = activityRepository.save(newActivity);
 
-        volunteeringService.insertOrganizerVolunteering(auth, activity);
+        final var user = userService.findMyUser(auth);
+        var volunteering = volunteeringMapper.toEntity(user, activity);
+        volunteeringRepository.save(volunteering);
 
         return activityMapper.toDto(activity);
     }
@@ -71,10 +80,15 @@ public class ActivityServiceImpl implements ActivityService {
      * @return datos de la actividad recuperada.
      * */
     @Override
-    public ActivityDTO getActivity(long id) {
-        var activity = activityRepository.findById(id)
+    public ActivityDTO getActivityDto(long id) {
+        var activity = getActivity(id);
+        return activityMapper.toDto(activity);
+    }
+
+    @Override
+    public Activity getActivity(long id) {
+        return activityRepository.findById(id)
                 .orElseThrow(() -> new
                         ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
-        return activityMapper.toDto(activity);
     }
 }

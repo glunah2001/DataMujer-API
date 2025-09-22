@@ -30,7 +30,7 @@ public class UserController {
      * */
     @GetMapping("/me")
     public ResponseEntity<?> getMyProfile(final Authentication auth){
-        final var dto = userService.getMyProfile(auth);
+        final var dto = userService.finMyProfile(auth);
         return ResponseEntity.ok(dto);
     }
 
@@ -66,31 +66,31 @@ public class UserController {
 
     @GetMapping("/search/username")
     public ResponseEntity<?> findByUsername(@RequestParam String username) {
-        return ResponseEntity.ok(userService.findByUsername(username));
+        return ResponseEntity.ok(userService.findPersonByUsername(username));
     }
 
     @GetMapping("/search/national-id")
     public ResponseEntity<?> findByNationalId(@RequestParam String id) {
-        return ResponseEntity.ok(userService.findByNationalId(id));
+        return ResponseEntity.ok(userService.findPersonByNationalId(id));
     }
 
     @GetMapping("/search/legal-id")
     public ResponseEntity<?> findByLegalId(@RequestParam String id) {
-        return ResponseEntity.ok(userService.findByLegalId(id));
+        return ResponseEntity.ok(userService.findPersonByLegalId(id));
     }
 
     @GetMapping("/search/name")
     public ResponseEntity<?> findByName(@RequestParam String name) {
-        return ResponseEntity.ok(userService.findByName(name));
+        return ResponseEntity.ok(userService.findPersonByName(name));
     }
 
     @GetMapping("/search/surname")
     public ResponseEntity<?> findBySurname(@RequestParam String surname) {
-        return ResponseEntity.ok(userService.findBySurname(surname));
+        return ResponseEntity.ok(userService.findPersonBySurname(surname));
     }
 
     @GetMapping("/search/business")
     public ResponseEntity<?> findByBusinessName(@RequestParam String businessName) {
-        return ResponseEntity.ok(userService.findByBusinessName(businessName));
+        return ResponseEntity.ok(userService.findPersonByBusinessName(businessName));
     }
 }
