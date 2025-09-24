@@ -80,17 +80,20 @@ public class UserController {
     }
 
     @GetMapping("/search/name")
-    public ResponseEntity<?> findByName(@RequestParam String name) {
-        return ResponseEntity.ok(userService.findPersonByName(name));
+    public ResponseEntity<?> findByName(@RequestParam String name,
+                                        @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(userService.findPersonByName(name, page));
     }
 
     @GetMapping("/search/surname")
-    public ResponseEntity<?> findBySurname(@RequestParam String surname) {
-        return ResponseEntity.ok(userService.findPersonBySurname(surname));
+    public ResponseEntity<?> findBySurname(@RequestParam String surname,
+                                           @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(userService.findPersonBySurname(surname, page));
     }
 
     @GetMapping("/search/business")
-    public ResponseEntity<?> findByBusinessName(@RequestParam String businessName) {
-        return ResponseEntity.ok(userService.findPersonByBusinessName(businessName));
+    public ResponseEntity<?> findByBusinessName(@RequestParam String businessName,
+                                                @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(userService.findPersonByBusinessName(businessName, page));
     }
 }

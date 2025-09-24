@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.service.resource;
 
+import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.CommonUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.LegalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.PhysicalPersonUpdateDTO;
@@ -7,20 +8,19 @@ import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
 import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.User;
+import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.PersonMapper;
 import com.UNED.APIDataMujer.repository.LegalPersonRepository;
-import com.UNED.APIDataMujer.repository.PersonRepository;
 import com.UNED.APIDataMujer.repository.PhysicalPersonRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Clase encargada de la consulta y modificación de información de los usuarios registrados.
@@ -34,7 +34,6 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final LegalPersonRepository legalPersonRepository;
     private final PhysicalPersonRepository physicalPersonRepository;
-    private final PersonRepository personRepository;
 
     private final PersonMapper personMapper;
 
@@ -166,33 +165,28 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<PhysicalPersonDTO> findPersonByName(String name) {
-        var nameSearch = physicalPersonRepository.findByNameContainingIgnoreCase(name);
-        return mapListToDto(nameSearch,
+    public SimplePage<PhysicalPersonDTO> findPersonByName(String name, int page) {
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        var nameSearch = physicalPersonRepository.findByNameContainingIgnoreCase(name, pageable);
+        return PaginationUtil.wrapInPage(nameSearch,
                 pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp));
     }
 
     @Override
-    public List<LegalPersonDTO> findPersonByBusinessName(String name) {
-        var businessNameSearch = legalPersonRepository.findByBusinessNameContainingIgnoreCase(name);
-        return mapListToDto(businessNameSearch,
+    public SimplePage<LegalPersonDTO> findPersonByBusinessName(String name, int page) {
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        var businessNameSearch = legalPersonRepository.findByBusinessNameContainingIgnoreCase(name, pageable);
+        return PaginationUtil.wrapInPage(businessNameSearch,
                 lp -> personMapper.toDto(getUserByPerson(lp.getPerson()), lp));
     }
 
     @Override
-    public List<PhysicalPersonDTO> findPersonBySurname(String surname) {
-        var results = new ArrayList<PhysicalPersonDTO>();
-        var fistSurnamesSearch = physicalPersonRepository
-                .findByFirstSurnameContainingIgnoreCase(surname);
-        var secondSurnameSearch = physicalPersonRepository
-                .findBySecondSurnameContainingIgnoreCase(surname);
-
-        results.addAll(mapListToDto(fistSurnamesSearch,
-                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp)));
-        results.addAll(mapListToDto(secondSurnameSearch,
-                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp)));
-
-        return results;
+    public SimplePage<PhysicalPersonDTO> findPersonBySurname(String surname, int page) {
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        var surnameSearch = physicalPersonRepository
+                .findByAnySurnameContainingIgnoreCase(surname, pageable);
+        return PaginationUtil.wrapInPage(surnameSearch,
+                pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp));
     }
 
     /**
@@ -259,9 +253,5 @@ public class UserServiceImpl implements UserService{
                         IllegalArgumentException("El usuario no se ha encontrado."));
     }
 
-    private <T, R> List<R> mapListToDto(List<T> list, Function<T, R> mapperFunction){
-        return list.stream()
-                .map(mapperFunction)
-                .toList();
-    }
+
 }

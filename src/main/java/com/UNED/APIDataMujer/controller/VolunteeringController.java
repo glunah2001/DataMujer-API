@@ -42,8 +42,9 @@ public class VolunteeringController {
      * */
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getMyPending(Authentication auth){
-        var volunteering = volunteeringService.getMyPendingVolunteering(auth);
+    public ResponseEntity<?> getMyPending(Authentication auth,
+                                          @RequestParam(defaultValue = "0") int page){
+        var volunteering = volunteeringService.getMyPendingVolunteering(auth, page);
         return ResponseEntity.ok(volunteering);
     }
 
@@ -55,8 +56,9 @@ public class VolunteeringController {
      * */
     @GetMapping("volunteersInActivity/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getVolunteeringForAnActivity(@PathVariable long id){
-        var volunteering = volunteeringService.getVolunteeringForAnActivity(id);
+    public ResponseEntity<?> getVolunteeringForAnActivity(@PathVariable long id,
+                                                          @RequestParam(defaultValue = "0") int page){
+        var volunteering = volunteeringService.getVolunteeringForAnActivity(id, page);
         return ResponseEntity.ok(volunteering);
     }
 

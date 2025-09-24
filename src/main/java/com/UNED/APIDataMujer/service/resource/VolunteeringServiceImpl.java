@@ -1,17 +1,24 @@
 package com.UNED.APIDataMujer.service.resource;
 
+import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Volunteering;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
+import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
 import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -50,10 +57,13 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * @return lista de voluntariados con detalles de la actividad
      * */
     @Override
-    public List<VolunteeringDTO> getMyPendingVolunteering(Authentication auth) {
+    public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth,
+                                                                @RequestParam(defaultValue = "0") int page) {
         final var user = userService.findMyUser(auth);
-        var volunteering = volunteeringRepository.findByUserIdAndActivityIsFinalizedFalse(user.getId());
-        return toDtoStreamConverter(volunteering);
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Page<Volunteering> volunteering = volunteeringRepository
+                                            .findByUserIdAndActivityIsFinalizedFalse(user.getId(), pageable);
+        return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
     /**
@@ -63,9 +73,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * @return lista de voluntariados con detalles de la actividad.
      * */
     @Override
-    public List<VolunteeringDTO> getVolunteeringForAnActivity(long id) {
-        var volunteering = volunteeringRepository.findByActivityId(id);
-        return toDtoStreamConverter(volunteering);
+    public SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id,
+                                                                    @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Page<Volunteering> volunteering = volunteeringRepository
+                                            .findByActivityId(id, pageable);
+        return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
     @Override
@@ -125,18 +138,6 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var volunteering = volunteeringMapper.toEntity(user, activity, dto);
         var myVolunteering = volunteeringRepository.save(volunteering);
         return volunteeringMapper.toDto(myVolunteering);
-    }
-
-    /**
-     * Función auxiliar encargada de llamar al mapper de voluntariados para convertir
-     * entidades a DTO. Usando streams.
-     * @param volunteering lista de entidades volunteering
-     * @return lista de DTO. Volunteering
-     * */
-    private List<VolunteeringDTO> toDtoStreamConverter(List<Volunteering> volunteering){
-        return volunteering.stream()
-                .map(volunteeringMapper::toDto)
-                .toList();
     }
 
     private boolean sameActivityVolunteering(long activityId, List<VolunteeringRegisterDTO> list){

@@ -57,8 +57,8 @@ public class ActivityController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllActiveActivities(){
-        var activities = activityService.getAllActiveActivities();
+    public ResponseEntity<?> getAllActiveActivities(@RequestParam(defaultValue = "0") int page){
+        var activities = activityService.getAllActiveActivities(page);
         return ResponseEntity.ok(activities);
     }
 

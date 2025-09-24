@@ -1,15 +1,20 @@
 package com.UNED.APIDataMujer.service.resource;
 
+import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.ActivityRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.ActivityDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ActivityMapper;
+import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
 import com.UNED.APIDataMujer.repository.ActivityRepository;
 import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,10 +102,9 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public List<ActivityDTO> getAllActiveActivities() {
-        var activities = activityRepository.findByIsFinalizedFalse();
-        return activities.stream()
-                .map(activityMapper::toDto)
-                .toList();
+    public SimplePage<ActivityDTO> getAllActiveActivities(int page) {
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Page<Activity> activities = activityRepository.findByIsFinalizedFalse(pageable);
+        return PaginationUtil.wrapInPage(activities, activityMapper::toDto);
     }
 }
