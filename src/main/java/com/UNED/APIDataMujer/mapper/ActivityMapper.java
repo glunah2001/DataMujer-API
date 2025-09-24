@@ -38,8 +38,7 @@ public class ActivityMapper {
                 activity.getLocation(),
                 activity.isOnSite(),
                 activity.getStartDate(),
-                activity.getEndDate(),
-                activity.isFinalized()
+                activity.getEndDate()
         );
     }
 

@@ -1,6 +1,8 @@
 package com.UNED.APIDataMujer.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -28,5 +30,8 @@ public record ActivityRegisterDTO(
         @NotNull(message = "EL dato \"Fecha de cierre\" es obligatorio")
         @Future(message = "La fecha de cierre debe ser superior a la actual y a la de " +
                 "apertura (con al menos una hora de duración)")
-        LocalDateTime endDate
+        LocalDateTime endDate,
+        @NotBlank(message = "El Dato \"Nombre de Usuario\" es obligatorio.")
+        @Size(min = 3, max = 15, message = "El nombre de usuario debe contener 3 a 15 caracteres.")
+        String username
 ) { }

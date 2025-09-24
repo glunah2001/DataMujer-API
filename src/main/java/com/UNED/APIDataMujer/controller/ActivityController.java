@@ -29,15 +29,13 @@ public class ActivityController {
     /**
      * Función encargada de insertar una nueva actividad en la BD.
      * Este endpoint está limitado a los usuarios con roles de mentor o administrador
-     * @param authentication credenciales de acceso del usuario
      * @param dto información de la actividad a insertar
      * @return actividad recién insertada en la bd
      * */
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> createNewActivity(@Valid @RequestBody final ActivityRegisterDTO dto,
-                                            final Authentication authentication){
-        var activity = activityService.createNewActivity(dto, authentication);
+    public ResponseEntity<?> createNewActivity(@Valid @RequestBody final ActivityRegisterDTO dto){
+        var activity = activityService.createNewActivity(dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/activity/{id}")
@@ -56,6 +54,12 @@ public class ActivityController {
     public ResponseEntity<?> getActivity(@PathVariable long id){
         var activity = activityService.getActivityDto(id);
         return ResponseEntity.ok(activity);
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllActiveActivities(){
+        var activities = activityService.getAllActiveActivities();
+        return ResponseEntity.ok(activities);
     }
 
 }

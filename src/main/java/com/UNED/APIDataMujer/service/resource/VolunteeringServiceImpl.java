@@ -94,6 +94,11 @@ public class VolunteeringServiceImpl implements VolunteeringService{
             throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
                     "del usuario "+username+" se está registrando en una actividad clausurada.");
 
+        if(!dto.startShift().isBefore(dto.endShift()))
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
+                    "del usuario "+username+" indica que la fecha de inicio está después de la fecha de " +
+                    "cierre de su turno.");
+
         if(dto.startShift().isBefore(activity.getStartDate()) ||
            dto.endShift().isAfter(activity.getEndDate()))
             throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
@@ -105,27 +110,20 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                     "del usuario "+username+" debe abarcar una cantidad de horas razonables. " +
                     "De 1 a 8 horas por turno.");
 
-        if(!dto.startShift().isBefore(dto.endShift()))
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" indica que la fecha de inicio está después de la fecha de " +
-                    "cierre de su turno.");
-
         final var user = userService.findUserByUsername(username);
+        var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al consultar organizador " +
+                        "de la actividad"));
 
-        var existsConflict = volunteeringRepository.existsByUserAndOverlappingShift(
-                user.getId(),
-                dto.startShift(),
-                dto.endShift()
-                );
-        if(existsConflict)
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" se está registrando en una fecha y hora en la que " +
-                    "ya se encuentra inscrito en otro voluntariado");
+        var sameOrganizerConflict = volunteeringRepository.existsConflictWithSameOrganizer(
+                user.getId(), organizerId, activity.getId(), dto.startShift(), dto.endShift());
 
+        if(sameOrganizerConflict)
+            throw new IllegalArgumentException("Inconsistencia de datos detectada: El usuario "+username +
+                    "no puede tener turnos que solapen en actividades del mismo organizador");
 
         var volunteering = volunteeringMapper.toEntity(user, activity, dto);
         var myVolunteering = volunteeringRepository.save(volunteering);
-
         return volunteeringMapper.toDto(myVolunteering);
     }
 

@@ -9,6 +9,5 @@ public record ActivityDTO(
         String location,
         boolean isOnSite,
         LocalDateTime startDate,
-        LocalDateTime endDate,
-        boolean isFinished
+        LocalDateTime endDate
 ) { }

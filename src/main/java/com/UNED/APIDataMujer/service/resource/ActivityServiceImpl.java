@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Clase encargada de gestionar la lógica de negocio relacionada con
@@ -38,21 +39,17 @@ public class ActivityServiceImpl implements ActivityService {
      * Función de interfaz encargada de crear una nueva actividad y
      * delegando la creación de un voluntariado (organizador) al
      * servicio encargado de esto
-     * @param auth credenciales de autentificación del usuario que
-     *             crea la actividad (colocado como organizador de
-     *             la actividad)
      * @param dto contiene toda la información de la nueva actividad.
      * @return la actividad registrada en la bd.
      * */
     @Override
     @Transactional
-    public ActivityDTO createNewActivity(ActivityRegisterDTO dto,
-                                         final Authentication auth) {
+    public ActivityDTO createNewActivity(ActivityRegisterDTO dto) {
         var startDate = dto.startDate();
         var endDate = dto.endDate();
 
         if(startDate.isBefore(LocalDateTime.now().plusDays(1)))
-            throw new IllegalArgumentException("La actividad debe anunciarse con al manos 1 día" +
+            throw new IllegalArgumentException("La actividad debe anunciarse con al manos 1 día " +
                     "de antelación");
 
         if(startDate.isAfter(endDate))
@@ -67,20 +64,17 @@ public class ActivityServiceImpl implements ActivityService {
         var newActivity = activityMapper.toEntity(dto);
         final var activity = activityRepository.save(newActivity);
 
-        final var user = userService.findMyUser(auth);
+        final var user = userService.findUserByUsername(dto.username());
 
-        boolean existsConflict = volunteeringRepository.existsByUserAndOverlappingShift(
-                user.getId(),
-                startDate,
-                endDate);
+        var conflict = volunteeringRepository.existsOrganizerConflict(
+                user.getId(), startDate, endDate);
 
-        if(existsConflict)
-            throw new IllegalArgumentException("La actividad no se pudo crear debido a que usted se encuentra anotado " +
-                    "como voluntario en una actividad pendiente.");
+        if(conflict)
+            throw new IllegalArgumentException("El usuario "+user.getUsername()+" ya organiza " +
+                    "una actividad cuyo horario entra en conflicto con la que desea crear.");
 
         var volunteering = volunteeringMapper.toEntity(user, activity);
         volunteeringRepository.save(volunteering);
-
         return activityMapper.toDto(activity);
     }
 
@@ -100,5 +94,13 @@ public class ActivityServiceImpl implements ActivityService {
         return activityRepository.findById(id)
                 .orElseThrow(() -> new
                         ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
+    }
+
+    @Override
+    public List<ActivityDTO> getAllActiveActivities() {
+        var activities = activityRepository.findByIsFinalizedFalse();
+        return activities.stream()
+                .map(activityMapper::toDto)
+                .toList();
     }
 }

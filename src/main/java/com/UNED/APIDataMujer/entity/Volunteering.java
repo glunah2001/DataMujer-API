@@ -41,4 +41,7 @@ public class Volunteering {
 
     @Column(name = "RolEnActividad", length = 35, nullable = false)
     private String activityRole;
+
+    @Column(name = "EsOrganizador", nullable = false)
+    private boolean isMainOrganizer;
 }

@@ -16,31 +16,27 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class VolunteeringMapper {
 
-    /**
-     * Función encargada de mapear a una entidad Volunteering.
-     * Se usa unidamente cuando se crea una nueva actividad, asignando al usuario creador
-     * como "Organizador"
-     * @param activity actividad en la cual la persona realza el voluntariado
-     * @param user persona que se inscribe en la actividad
-     * @return una entidad Volunteering lista para ser ingresada en BD
-     * */
     public Volunteering toEntity(User user, Activity activity){
         return Volunteering.builder()
                 .activity(activity)
                 .user(user)
                 .startShift(activity.getStartDate())
                 .endShift(activity.getEndDate())
-                .activityRole("Organizador")
+                .activityRole("Organizador Principal")
+                .isMainOrganizer(true)
                 .build();
     }
 
-    public Volunteering toEntity(User user, Activity activity, VolunteeringRegisterDTO dto){
+    public Volunteering toEntity(User user,
+                                 Activity activity,
+                                 VolunteeringRegisterDTO dto){
         return Volunteering.builder()
                 .activity(activity)
                 .user(user)
                 .startShift(dto.startShift())
                 .endShift(dto.endShift())
                 .activityRole(dto.activityRole())
+                .isMainOrganizer(false)
                 .build();
     }
 
