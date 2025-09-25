@@ -6,7 +6,10 @@ import com.UNED.APIDataMujer.dto.request.LegalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.PhysicalPersonUpdateDTO;
 import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.dto.response.PhysicalPersonDTO;
+import com.UNED.APIDataMujer.dto.response.ProfileDTO;
+import com.UNED.APIDataMujer.entity.LegalPerson;
 import com.UNED.APIDataMujer.entity.Person;
+import com.UNED.APIDataMujer.entity.PhysicalPerson;
 import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.PersonMapper;
@@ -24,7 +27,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Clase encargada de la consulta y modificación de información de los usuarios registrados.
- * @author  glunah2001
+ * @author  glunah2001, AHKolodin
  * @see UserService
  * */
 @Service
@@ -34,7 +37,6 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final LegalPersonRepository legalPersonRepository;
     private final PhysicalPersonRepository physicalPersonRepository;
-
     private final PersonMapper personMapper;
 
     /**
@@ -44,13 +46,15 @@ public class UserServiceImpl implements UserService{
      * @return el dto. Con la información no comprometedora completa de la persona física o legal
      * */
     @Override
-    public Object finMyProfile(final Authentication authentication) {
+    public ProfileDTO findMyProfile(final Authentication authentication) {
         var user = findMyUser(authentication);
+        return mapUserToProfileDTO(user);
+    }
 
-        return switch(user.getPerson().getPersonType()){
-            case FISICA -> getPhysicalProfile(user);
-            case LEGAL -> getLegalProfile(user);
-        };
+    @Override
+    public ProfileDTO findPersonByUsername(String username) {
+        var user = getUserByUsername(username);
+        return mapUserToProfileDTO(user);
     }
 
     /**
@@ -82,10 +86,7 @@ public class UserServiceImpl implements UserService{
     public LegalPersonDTO updateMyLegalProfile(final Authentication authentication,
                                                final LegalPersonUpdateDTO dto) {
         var user = updateCommonData(authentication, dto.commonUpdateDTO());
-
-        var legalPerson = legalPersonRepository.findById(user.getPerson().getId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ocurrió un error al intentar obtener su información"));
+        var legalPerson = getLegalPerson(user);
 
         legalPerson.setBusinessName(dto.businessName());
         legalPerson.setFoundationDate(dto.foundationDate());
@@ -108,10 +109,7 @@ public class UserServiceImpl implements UserService{
     public PhysicalPersonDTO updateMyPhysicalProfile(final Authentication authentication,
                                                      final PhysicalPersonUpdateDTO dto) {
         var user = updateCommonData(authentication, dto.commonUpdateDTO());
-
-        var physicalPerson = physicalPersonRepository.findById(user.getPerson().getId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ocurrió un error al intentar obtener su información"));
+        var physicalPerson = getPhysicalPerson(user);
 
         physicalPerson.setName(dto.name());
         physicalPerson.setFirstSurname(dto.firstSurname());
@@ -124,35 +122,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Object findPersonByUsername(String username) {
-        var user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new
-                        UsernameNotFoundException("El usuario \""+username+"\" no se ha encontrado"));
-        var person = user.getPerson();
-
-        return switch(person.getPersonType()) {
-            case FISICA -> {
-                var pp = physicalPersonRepository.findById(person.getId())
-                        .orElseThrow(() -> new
-                                IllegalArgumentException("Persona física no encontrada"));
-                yield personMapper.toDto(user, pp);
-            }
-            case LEGAL -> {
-                var pl = legalPersonRepository.findById(person.getId())
-                        .orElseThrow(() -> new
-                                IllegalArgumentException("Persona jurídica no encontrada"));
-                yield personMapper.toDto(user, pl);
-            }
-        };
-    }
-
-    @Override
     public PhysicalPersonDTO findPersonByNationalId(String nationalId) {
         var pp = physicalPersonRepository.findByNationalId(nationalId)
                 .orElseThrow(() -> new IllegalArgumentException("La persona física con " +
                         "identificación "+nationalId+" no fue encontrada."));
-        var user = getUserByPerson(pp.getPerson());
-        return personMapper.toDto(user, pp);
+        return personMapper.toDto(getUserByPerson(pp.getPerson()), pp);
     }
 
     @Override
@@ -160,13 +134,12 @@ public class UserServiceImpl implements UserService{
         var lp = legalPersonRepository.findByLegalId(legalId)
                 .orElseThrow(() -> new IllegalArgumentException("La persona jurídica con " +
                         "identificación "+legalId+" no fue encontrada."));
-        var user = getUserByPerson(lp.getPerson());
-        return personMapper.toDto(user, lp);
+        return personMapper.toDto(getUserByPerson(lp.getPerson()), lp);
     }
 
     @Override
     public SimplePage<PhysicalPersonDTO> findPersonByName(String name, int page) {
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id"));
         var nameSearch = physicalPersonRepository.findByNameContainingIgnoreCase(name, pageable);
         return PaginationUtil.wrapInPage(nameSearch,
                 pp -> personMapper.toDto(getUserByPerson(pp.getPerson()), pp));
@@ -174,7 +147,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public SimplePage<LegalPersonDTO> findPersonByBusinessName(String name, int page) {
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id"));
         var businessNameSearch = legalPersonRepository.findByBusinessNameContainingIgnoreCase(name, pageable);
         return PaginationUtil.wrapInPage(businessNameSearch,
                 lp -> personMapper.toDto(getUserByPerson(lp.getPerson()), lp));
@@ -182,7 +155,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public SimplePage<PhysicalPersonDTO> findPersonBySurname(String surname, int page) {
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("Id"));
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id"));
         var surnameSearch = physicalPersonRepository
                 .findByAnySurnameContainingIgnoreCase(surname, pageable);
         return PaginationUtil.wrapInPage(surnameSearch,
@@ -214,37 +187,8 @@ public class UserServiceImpl implements UserService{
         person.setCountry(dto.country());
         person.setLocation(dto.location());
         user.setEmail(dto.email());
+
         return userRepository.save(user);
-    }
-
-    /**
-     * Función auxiliar que recupera la información personal de un usuario que tiene por
-     * propietario una persona física
-     * @param user usuario recuperado de la BD ligado con la persona física a buscar.
-     * @return retorna los datos de la persona física en un dto.
-     * @throws IllegalArgumentException en caso de que la persona física buscada no exista en la bd.
-     * */
-    private PhysicalPersonDTO getPhysicalProfile(User user){
-        var person = physicalPersonRepository.findById(user.getPerson().getId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ocurrió un error al intentar obtener su información"));
-
-        return personMapper.toDto(user, person);
-    }
-
-    /**
-     * Función auxiliar que recupera la información personal de un usuario que tiene por
-     * propietario una persona física
-     * @param user usuario recuperado de la BD ligado con la persona jurídica a buscar.
-     * @return retorna los datos de la persona jurídica en un dto.
-     * @throws IllegalArgumentException en caso de que la persona jurídica buscada no exista en la bd.
-     * */
-    private LegalPersonDTO getLegalProfile(User user){
-        var person = legalPersonRepository.findById(user.getPerson().getId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ocurrió un error al intentar obtener su información"));
-
-        return personMapper.toDto(user, person);
     }
 
     private User getUserByPerson(Person person){
@@ -253,5 +197,23 @@ public class UserServiceImpl implements UserService{
                         IllegalArgumentException("El usuario no se ha encontrado."));
     }
 
+    private PhysicalPerson getPhysicalPerson(User user){
+        return physicalPersonRepository.findById(user.getPerson().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al " +
+                        "intentar obtener su información"));
+    }
+
+    private LegalPerson getLegalPerson(User user){
+        return legalPersonRepository.findById(user.getPerson().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al " +
+                        "intentar obtener su información"));
+    }
+
+    private ProfileDTO mapUserToProfileDTO(User user){
+        return switch(user.getPerson().getPersonType()){
+            case FISICA -> personMapper.toDto(user, getPhysicalPerson(user));
+            case LEGAL -> personMapper.toDto(user, getLegalPerson(user));
+        };
+    }
 
 }
