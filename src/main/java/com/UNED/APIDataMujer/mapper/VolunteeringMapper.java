@@ -33,9 +33,9 @@ public class VolunteeringMapper {
         return Volunteering.builder()
                 .activity(activity)
                 .user(user)
-                .startShift(dto.startShift())
-                .endShift(dto.endShift())
-                .activityRole(dto.activityRole())
+                .startShift(dto.volunteeringData().startShift())
+                .endShift(dto.volunteeringData().endShift())
+                .activityRole(dto.volunteeringData().activityRole())
                 .isMainOrganizer(false)
                 .build();
     }

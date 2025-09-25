@@ -1,6 +1,7 @@
 package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
+import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
@@ -18,5 +19,6 @@ public interface VolunteeringService {
                                      LocalDateTime startDate,
                                      LocalDateTime endDate);
     long createVolunteering(VolunteeringWrapperDTO dto);
+    VolunteeringDTO createMyVolunteering(Authentication auth, BaseVolunteeringRegisterDTO dto);
     VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto);
 }
