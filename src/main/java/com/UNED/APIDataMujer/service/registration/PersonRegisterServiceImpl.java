@@ -13,7 +13,6 @@ import com.UNED.APIDataMujer.enums.PersonType;
 import com.UNED.APIDataMujer.mapper.PersonMapper;
 import com.UNED.APIDataMujer.mapper.UserMapper;
 import com.UNED.APIDataMujer.repository.LegalPersonRepository;
-import com.UNED.APIDataMujer.repository.PersonRepository;
 import com.UNED.APIDataMujer.repository.PhysicalPersonRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -31,7 +30,6 @@ import org.springframework.stereotype.Service;
 public class PersonRegisterServiceImpl implements PersonRegisterService {
 
     private final LegalPersonRepository legalPersonRepository;
-    private final PersonRepository personRepository;
     private final PhysicalPersonRepository physicalPersonRepository;
     private final UserRepository userRepository;
 
@@ -94,11 +92,10 @@ public class PersonRegisterServiceImpl implements PersonRegisterService {
      * */
     private CommonRegisterResult commonRegister(final CommonRegisterDTO commonDto, PersonType personType){
         var person = personMapper.toEntity(commonDto, personType);
-        Person registeredPerson = personRepository.save(person);
 
-        var user = userMapper.toEntity(registeredPerson, commonDto);
+        var user = userMapper.toEntity(person, commonDto);
         User registeredUser = userRepository.save(user);
 
-        return new CommonRegisterResult(registeredUser, registeredPerson);
+        return new CommonRegisterResult(registeredUser, person);
     }
 }
