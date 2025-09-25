@@ -38,8 +38,9 @@ public class PersonRegisterController {
         final var physicalPerson = personRegisterService.physicalRegister(physicalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("/users/{username}")
-                .buildAndExpand(physicalPerson.username())
+                .path("/user/search/username")
+                .queryParam("username", physicalPerson.username())
+                .build()
                 .toUri();
         return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
                 "mediante el correo enviado a la dirección registrada.");
@@ -56,8 +57,9 @@ public class PersonRegisterController {
         final var legalPerson = personRegisterService.legalRegister(legalPersonRegisterDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("/users/{username}")
-                .buildAndExpand(legalPerson.username())
+                .path("/user/search/username")
+                .queryParam("username", legalPerson.username())
+                .build()
                 .toUri();
         return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
                 "mediante el correo enviado a la dirección registrada.");

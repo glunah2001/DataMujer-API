@@ -27,7 +27,7 @@ public class VolunteeringController {
 
     private final VolunteeringService volunteeringService;
 
-    @GetMapping("/{id}")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> getVolunteering(@RequestParam long id){
         var volunteering = volunteeringService.getVolunteering(id);
@@ -51,14 +51,14 @@ public class VolunteeringController {
     /**
      * Función encargada de atender las solicitudes que buscan obtener todos
      * los voluntariados en una actividad en concreto
-     * @param id id de la actividad
+     * @param activityId activityId de la actividad
      * @return listado de los voluntariados de dicha actividad
      * */
-    @GetMapping("volunteersInActivity/{id}")
+    @GetMapping("volunteersInActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getVolunteeringForAnActivity(@PathVariable long id,
+    public ResponseEntity<?> getVolunteeringForAnActivity(@RequestParam long activityId,
                                                           @RequestParam(defaultValue = "0") int page){
-        var volunteering = volunteeringService.getVolunteeringForAnActivity(id, page);
+        var volunteering = volunteeringService.getVolunteeringForAnActivity(activityId, page);
         return ResponseEntity.ok(volunteering);
     }
 
@@ -68,8 +68,9 @@ public class VolunteeringController {
         var activityId = volunteeringService.insertVolunteering(dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("volunteersInActivity/{id}")
-                .buildAndExpand(activityId)
+                .path("/volunteering/volunteersInActivity")
+                .queryParam("activityId", activityId)
+                .build()
                 .toUri();
 
         return ResponseEntity.created(location).build();
@@ -81,10 +82,10 @@ public class VolunteeringController {
         var volunteering = volunteeringService.insertVolunteering(dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("volunteering/{id}")
-                .buildAndExpand(volunteering.id())
+                .path("/volunteering")
+                .queryParam("id", volunteering.id())
+                .build()
                 .toUri();
-
         return ResponseEntity.created(location).body(volunteering);
     }
 
