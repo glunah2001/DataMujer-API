@@ -16,4 +16,4 @@ public record PhysicalPersonDTO(
         String location,
         String username,
         String email
-) { }
+) implements ProfileDTO { }

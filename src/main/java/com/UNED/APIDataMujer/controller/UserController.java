@@ -30,7 +30,7 @@ public class UserController {
      * */
     @GetMapping("/me")
     public ResponseEntity<?> getMyProfile(final Authentication auth){
-        final var dto = userService.finMyProfile(auth);
+        final var dto = userService.findMyProfile(auth);
         return ResponseEntity.ok(dto);
     }
 
