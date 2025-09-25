@@ -1,6 +1,7 @@
 package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
+import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
@@ -13,5 +14,5 @@ public interface VolunteeringService {
     SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth, int page);
     SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id, int page);
     long insertVolunteering(VolunteeringWrapperDTO dto);
-    VolunteeringDTO insertVolunteering(VolunteeringRegisterDTO dto);
+    VolunteeringDTO insertMyVolunteering(Authentication auth, BaseVolunteeringRegisterDTO dto);
 }

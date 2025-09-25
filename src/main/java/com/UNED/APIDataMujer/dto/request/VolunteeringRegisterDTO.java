@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,17 +9,8 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 public record VolunteeringRegisterDTO(
-        @NotNull(message = "EL dato \"Actividad\" es obligatorio")
-        Long activityId,
+        @Valid
+        BaseVolunteeringRegisterDTO volunteeringData,
         @NotBlank(message = "EL dato \"Nombre de Usuario\" es obligatorio")
-        String username,
-        @NotNull(message = "El dato \"Inicio de Turno\" es obligatorio")
-        @Future(message = "El voluntariado debe notificarse con un margen de tiempo de 1 día mínimo")
-        LocalDateTime startShift,
-        @NotNull(message = "EL dato \"Fin de Turno\" es obligatorio")
-        @Future(message = "El voluntariado debe notificarse con un margen de tiempo de 1 día mínimo")
-        LocalDateTime endShift,
-        @NotNull(message = "EL dato \"Rol en Actividad\" es obligatorio")
-        @Size(max = 15, message = "Describa el rol en 15 o menos caracteres")
-        String activityRole
+        String username
 ) { }

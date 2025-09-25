@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.controller;
 
+import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.service.resource.VolunteeringService;
@@ -78,8 +79,9 @@ public class VolunteeringController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> postVolunteering(@Valid @RequestBody VolunteeringRegisterDTO dto){
-        var volunteering = volunteeringService.insertVolunteering(dto);
+    public ResponseEntity<?> postMyVolunteering(@Valid @RequestBody BaseVolunteeringRegisterDTO dto,
+                                              final Authentication auth){
+        var volunteering = volunteeringService.insertMyVolunteering(auth, dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/volunteering")
