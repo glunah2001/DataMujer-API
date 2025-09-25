@@ -59,7 +59,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     @Override
     public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth,
                                                                 @RequestParam(defaultValue = "0") int page) {
-        final var user = userService.findMyUser(auth);
+        final var user = userService.getMyUser(auth);
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
         Page<Volunteering> volunteering = volunteeringRepository
                                             .findByUserIdAndActivityIsFinalizedFalse(user.getId(), pageable);
@@ -123,7 +123,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                     "del usuario "+username+" debe abarcar una cantidad de horas razonables. " +
                     "De 1 a 8 horas por turno.");
 
-        final var user = userService.findUserByUsername(username);
+        final var user = userService.getUserByUsername(username);
         var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al consultar organizador " +
                         "de la actividad"));

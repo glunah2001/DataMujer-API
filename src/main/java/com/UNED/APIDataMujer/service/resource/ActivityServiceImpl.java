@@ -69,7 +69,7 @@ public class ActivityServiceImpl implements ActivityService {
         var newActivity = activityMapper.toEntity(dto);
         final var activity = activityRepository.save(newActivity);
 
-        final var user = userService.findUserByUsername(dto.username());
+        final var user = userService.getUserByUsername(dto.username());
 
         var conflict = volunteeringRepository.existsOrganizerConflict(
                 user.getId(), startDate, endDate);
