@@ -9,6 +9,7 @@ import com.UNED.APIDataMujer.entity.Volunteering;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
+import com.UNED.APIDataMujer.repository.ActivityRepository;
 import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -36,10 +38,10 @@ import java.util.List;
 public class VolunteeringServiceImpl implements VolunteeringService{
 
     private final UserService userService;
-    private final ActivityService activityService;
-
     private final VolunteeringMapper volunteeringMapper;
+
     private final VolunteeringRepository volunteeringRepository;
+    private final ActivityRepository activityRepository;
 
     @Override
     public VolunteeringDTO getVolunteering(long id) {
@@ -82,8 +84,27 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     }
 
     @Override
+    public void createOrganizerVolunteering(String username,
+                                            Activity activity,
+                                            LocalDateTime startDate,
+                                            LocalDateTime endDate) {
+
+        final var user = userService.getUserByUsername(username);
+
+        var conflict = volunteeringRepository.existsOrganizerConflict(
+                user.getId(), startDate, endDate);
+        if(conflict)
+            throw new IllegalArgumentException("El usuario "+username+" ya organiza " +
+                    "una actividad cuyo horario entra en conflicto con la que desea crear.");
+
+        var volunteering = volunteeringMapper.toEntity(user, activity);
+
+        volunteeringRepository.save(volunteering);
+    }
+
+    @Override
     @Transactional
-    public long insertVolunteering(VolunteeringWrapperDTO dto) {
+    public long createVolunteering(VolunteeringWrapperDTO dto) {
         var list = dto.volunteering();
         if(list.isEmpty())
             throw new IllegalArgumentException("Información de voluntariados vacía");
@@ -93,13 +114,13 @@ public class VolunteeringServiceImpl implements VolunteeringService{
             throw new IllegalArgumentException(("Inconsistencia de datos detectada: Voluntariados para " +
                     "diferentes actividades."));
 
-        list.forEach(this::insertVolunteering);
+        list.forEach(this::createVolunteering);
         return activityId;
     }
 
     @Override
     @Transactional
-    public VolunteeringDTO insertVolunteering(VolunteeringRegisterDTO dto) {
+    public VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
         final var activity = getActivity(dto.activityId());
         var username = dto.username();
 
@@ -146,6 +167,8 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     }
 
     private Activity getActivity(long id){
-        return activityService.getActivity(id);
+        return activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
     }
 }

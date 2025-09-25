@@ -7,9 +7,7 @@ import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ActivityMapper;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
-import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
 import com.UNED.APIDataMujer.repository.ActivityRepository;
-import com.UNED.APIDataMujer.repository.VolunteeringRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Clase encargada de gestionar la lógica de negocio relacionada con
@@ -33,12 +30,9 @@ import java.util.List;
 public class ActivityServiceImpl implements ActivityService {
 
     private final ActivityMapper activityMapper;
-    private final VolunteeringMapper volunteeringMapper;
-
     private final ActivityRepository activityRepository;
-    private final VolunteeringRepository volunteeringRepository;
 
-    private final UserService userService;
+    private final VolunteeringService volunteeringService;
 
     /**
      * Función de interfaz encargada de crear una nueva actividad y
@@ -69,17 +63,8 @@ public class ActivityServiceImpl implements ActivityService {
         var newActivity = activityMapper.toEntity(dto);
         final var activity = activityRepository.save(newActivity);
 
-        final var user = userService.getUserByUsername(dto.username());
+        volunteeringService.createOrganizerVolunteering(dto.username(), activity, startDate, endDate);
 
-        var conflict = volunteeringRepository.existsOrganizerConflict(
-                user.getId(), startDate, endDate);
-
-        if(conflict)
-            throw new IllegalArgumentException("El usuario "+user.getUsername()+" ya organiza " +
-                    "una actividad cuyo horario entra en conflicto con la que desea crear.");
-
-        var volunteering = volunteeringMapper.toEntity(user, activity);
-        volunteeringRepository.save(volunteering);
         return activityMapper.toDto(activity);
     }
 
@@ -90,15 +75,10 @@ public class ActivityServiceImpl implements ActivityService {
      * */
     @Override
     public ActivityDTO getActivityDto(long id) {
-        var activity = getActivity(id);
+        var activity = activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
         return activityMapper.toDto(activity);
-    }
-
-    @Override
-    public Activity getActivity(long id) {
-        return activityRepository.findById(id)
-                .orElseThrow(() -> new
-                        ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
     }
 
     @Override

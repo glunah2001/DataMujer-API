@@ -8,6 +8,5 @@ import com.UNED.APIDataMujer.entity.Activity;
 public interface ActivityService {
     ActivityDTO createNewActivity(ActivityRegisterDTO dto);
     ActivityDTO getActivityDto(long id);
-    Activity getActivity(long id);
     SimplePage<ActivityDTO> getAllActiveActivities(int page);
 }

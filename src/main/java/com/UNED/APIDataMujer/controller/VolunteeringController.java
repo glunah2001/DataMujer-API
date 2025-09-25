@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 /**
  * RestController encargado de manejar las solicitudes relacionadas con los voluntariados
@@ -65,7 +64,7 @@ public class VolunteeringController {
     @PostMapping("/multiple")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> postMultipleVolunteering(@Valid @RequestBody VolunteeringWrapperDTO dto){
-        var activityId = volunteeringService.insertVolunteering(dto);
+        var activityId = volunteeringService.createVolunteering(dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/volunteering/volunteersInActivity")
@@ -79,7 +78,7 @@ public class VolunteeringController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> postVolunteering(@Valid @RequestBody VolunteeringRegisterDTO dto){
-        var volunteering = volunteeringService.insertVolunteering(dto);
+        var volunteering = volunteeringService.createVolunteering(dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/volunteering")
