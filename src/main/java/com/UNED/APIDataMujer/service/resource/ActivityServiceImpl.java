@@ -4,6 +4,7 @@ import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.ActivityRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.ActivityDTO;
 import com.UNED.APIDataMujer.entity.Activity;
+import com.UNED.APIDataMujer.enums.Role;
 import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ActivityMapper;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class ActivityServiceImpl implements ActivityService {
     private final ActivityMapper activityMapper;
     private final ActivityRepository activityRepository;
 
+    private final UserService userService;
     private final VolunteeringService volunteeringService;
 
     /**
@@ -94,5 +97,22 @@ public class ActivityServiceImpl implements ActivityService {
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
         Page<Activity> activities = activityRepository.findByIsFinalizedFalse(pageable);
         return PaginationUtil.wrapInPage(activities, activityMapper::toDto);
+    }
+
+    @Override
+    public void deleteActivity(long id, final Authentication auth) {
+        final var activity = activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
+
+        final var user = userService.getMyUser(auth);
+
+        if(user.getRole() != Role.ROLE_ADMIN &&
+                !volunteeringService.isUserOrganizer(activity.getId(), user.getId())){
+            throw new BusinessValidationException("Únicamente el organizador principal o un administrador " +
+                        "puede eliminar la actividad.");
+        }
+
+        activityRepository.delete(activity);
     }
 }

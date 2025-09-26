@@ -21,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -156,6 +155,16 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var user = userService.getMyUser(auth);
         var volunteering = new VolunteeringRegisterDTO(dto, user.getUsername());
         return createVolunteering(volunteering);
+    }
+
+    @Override
+    public boolean isUserOrganizer(long activityId, long userId) {
+        var organizerId = volunteeringRepository
+                .findOrganizerIdByActivityId(activityId).orElseThrow(() ->
+                        new ResourceNotFoundException("Ocurrió un error al intentar recuperar al organizador " +
+                                "de la actividad "+activityId+".")
+                );
+        return organizerId.equals(userId);
     }
 
 

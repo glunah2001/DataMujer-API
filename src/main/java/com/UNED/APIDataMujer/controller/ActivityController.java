@@ -67,4 +67,12 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<?> deleteActivity(@PathVariable long id,
+                                            final Authentication auth){
+        activityService.deleteActivity(id, auth);
+        return ResponseEntity.noContent().build();
+    }
+
 }

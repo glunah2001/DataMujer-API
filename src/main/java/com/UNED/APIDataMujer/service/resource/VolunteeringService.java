@@ -2,10 +2,10 @@ package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
-import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
+import com.UNED.APIDataMujer.entity.User;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
@@ -20,5 +20,5 @@ public interface VolunteeringService {
                                      LocalDateTime endDate);
     long createVolunteering(VolunteeringWrapperDTO dto);
     VolunteeringDTO createMyVolunteering(Authentication auth, BaseVolunteeringRegisterDTO dto);
-    VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto);
+    boolean isUserOrganizer(long activityId, long userId);
 }
