@@ -3,10 +3,12 @@ package com.UNED.APIDataMujer.service.resource;
 import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.VolunteeringUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Volunteering;
+import com.UNED.APIDataMujer.enums.Role;
 import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
@@ -167,6 +169,63 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return organizerId.equals(userId);
     }
 
+    @Override
+    public VolunteeringDTO updateVolunteering(long volunteeringId, final VolunteeringUpdateDTO dto) {
+        var volunteering = volunteeringRepository.findById(volunteeringId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No se ha encontrado un voluntariado registrado " +
+                                "con el id: "+volunteeringId+".")
+                );
+        var activity = volunteering.getActivity();
+
+        if(volunteering.isMainOrganizer())
+            throw new BusinessValidationException("Dado que este voluntariado está marcado como " +
+                    "\"voluntariado de organizador principal\" no es posible eliminarlo.");
+
+        final var user = volunteering.getUser();
+
+        validationRules(activity,
+                dto.startShift(),
+                dto.endShift(),
+                user.getId(),
+                user.getUsername());
+
+        volunteering.setStartShift(dto.startShift());
+        volunteering.setEndShift(dto.endShift());
+        volunteering.setActivityRole(dto.activityRole());
+
+        var updatedVolunteering = volunteeringRepository.save(volunteering);
+        return volunteeringMapper.toDto(updatedVolunteering);
+    }
+
+    @Override
+    @Transactional
+    public void deleteVolunteering(long volunteeringId, final Authentication auth) {
+        var volunteering = volunteeringRepository.findById(volunteeringId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No se ha podido encontrar el voluntariado a eliminar.")
+                );
+
+        if(volunteering.isMainOrganizer())
+            throw new BusinessValidationException("Dado que este voluntariado está marcado como " +
+                    "\"voluntariado de organizador principal\" no es posible eliminarlo.");
+
+        final var currentUser = userService.getMyUser(auth);
+
+        if(volunteering.getActivity().isFinalized() &&
+                currentUser.getRole() != Role.ROLE_ADMIN) {
+            throw new BusinessValidationException("No es posible eliminar voluntariados " +
+                    "de actividades finalizadas.");
+        }
+
+        if(currentUser.getRole() != Role.ROLE_ADMIN &&
+        !currentUser.equals(volunteering.getUser()))
+            throw new BusinessValidationException("Usted está intentando eliminar un voluntariado " +
+                    "que no le pertenece.");
+
+        volunteeringRepository.delete(volunteering);
+    }
+
 
     /**
      * Función de interfaz. Función encargada de insertar en la base de datos el voluntariado
@@ -177,49 +236,19 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * @throws ResourceNotFoundException en caso de que no se encuentre el voluntariado del organizador.
      * */
     @Transactional
-    public VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
+    private VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
         var volunteeringData = dto.volunteeringData();
 
         final var activity = getActivity(volunteeringData.activityId());
         var username = dto.username();
-
-        if(activity.isFinalized())
-            throw new BusinessValidationException("El voluntariado del usuario "+username+
-                    " no se puede llevar a cabo porque se pretende registrar en una actividad concluida.");
-
-        if(!dto.volunteeringData().startShift().isBefore(dto.volunteeringData().endShift()))
-            throw new BusinessValidationException("El voluntariado del usuario "+username+
-                    " no se puede llevar a cabo porque la fecha de inicio está después de la fecha " +
-                    "de cierre de su turno.");
-
-        if(dto.volunteeringData().startShift().isBefore(activity.getStartDate()) ||
-                dto.volunteeringData().endShift().isAfter(activity.getEndDate()))
-            throw new BusinessValidationException("El voluntariado del usuario "+username+
-                    " no se puede llevar a cabo porque su fecha de voluntariado está fuera del rango " +
-                    "de la actividad.");
-
-        var shiftLength = ChronoUnit.HOURS.between(dto.volunteeringData().startShift(),
-                dto.volunteeringData().endShift());
-
-        if(shiftLength < 1 || shiftLength> 8)
-            throw new BusinessValidationException("El voluntariado del usuario "+username+
-                    " no se puede llevar a cabo porque los turnos deben abarcar de 1 hora mínimo " +
-                    "a 8 horas máximo.");
-
         final var user = userService.getUserByUsername(username);
-        var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("El voluntariado del usuario "+username+
-                                " no se puede llevar a cabo porque no se pudo consultar al organizador" +
-                                "de la actividad."));
 
-        var sameOrganizerConflict = volunteeringRepository.existsConflictWithSameOrganizer(
-                user.getId(), organizerId, activity.getId(), dto.volunteeringData().startShift(), dto.volunteeringData().endShift());
 
-        if(sameOrganizerConflict)
-            throw new BusinessValidationException("El voluntariado del usuario "+username+
-                    " no se puede llevar a cabo porque no puede participar en dos actividades " +
-                    "del mismo organizador que se lleguen a solapar");
+        validationRules(activity,
+                dto.volunteeringData().startShift(),
+                dto.volunteeringData().endShift(),
+                user.getId(),
+                user.getUsername());
 
         var volunteering = volunteeringMapper.toEntity(user, activity, dto);
         var myVolunteering = volunteeringRepository.save(volunteering);
@@ -248,5 +277,42 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return activityRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
+    }
+
+    private void validationRules(Activity activity, LocalDateTime startShift,
+                                   LocalDateTime endShift, long userId, String username){
+        if(activity.isFinalized())
+            throw new BusinessValidationException("La operación de voluntariado del usuario " + username +
+                    " no se puede llevar a cabo porque la actividad está concluida.");
+
+        if(!startShift.isBefore(endShift))
+            throw new BusinessValidationException("La operación de voluntariado del usuario "
+                    + username + " no se puede llevar a cabo porque la fecha de inicio está " +
+                    "después de la fecha de cierre de su turno.");
+
+        if(startShift.isBefore(activity.getStartDate()) ||
+                endShift.isAfter(activity.getEndDate()))
+            throw new BusinessValidationException("La operación de voluntariado del usuario "
+                    + username + " no se puede llevar a cabo porque su fecha de voluntariado " +
+                    "está fuera del rango de la actividad.");
+
+        var shiftLength = ChronoUnit.HOURS.between(startShift, endShift);
+        if(shiftLength < 1 || shiftLength > 8)
+            throw new BusinessValidationException("La operación de voluntariado del usuario "
+                    + username + " no se puede llevar a cabo porque los turnos deben abarcar " +
+                    "de 1 hora mínimo a 8 horas máximo.");
+
+        var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No ha sido posible consultar al " +
+                                "organizador de la actividad."));
+
+        var sameOrganizerConflict = volunteeringRepository.existsConflictWithSameOrganizer(
+                userId, organizerId, activity.getId(), startShift, endShift);
+
+        if(sameOrganizerConflict)
+            throw new BusinessValidationException("La operación de voluntariado del usuario "
+                    + username + " no se puede llevar a cabo porque no puede participar en " +
+                    "dos actividades del mismo organizador que se lleguen a solapar.");
     }
 }
