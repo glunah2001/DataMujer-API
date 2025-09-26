@@ -18,7 +18,6 @@ import java.net.URI;
  * @author glunah2001
  * @see ActivityService
  * */
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/activity")
@@ -28,9 +27,9 @@ public class ActivityController {
 
     /**
      * Función encargada de insertar una nueva actividad en la BD.
-     * Este endpoint está limitado a los usuarios con roles de mentor o administrador
-     * @param dto información de la actividad a insertar
-     * @return actividad recién insertada en la bd
+     * Este endpoint está limitado a los usuarios con roles de mentor o administrador.
+     * @param dto información de la actividad a insertar.
+     * @return actividad recién insertada en la bd.
      * */
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
@@ -56,6 +55,12 @@ public class ActivityController {
         return ResponseEntity.ok(activity);
     }
 
+    /**
+     * Función encargada de obtener todas las actividades que no han
+     * sido finalizadas.
+     * @param page indicador de paginación.
+     * @return página de 25 actividades en DTO.
+     * */
     @GetMapping
     public ResponseEntity<?> getAllActiveActivities(@RequestParam(defaultValue = "0") int page){
         var activities = activityService.getAllActiveActivities(page);

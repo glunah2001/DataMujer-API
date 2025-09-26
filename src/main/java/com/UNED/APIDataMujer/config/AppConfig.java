@@ -29,7 +29,7 @@ public class AppConfig {
      * BD mediante una interfaz UserDetails.
      * Usado en login y jwtFilter para cargar un usuario con credenciales válidas y
      * en SecurityFilterChain para indicar a la aplicación como autenticar usuarios.
-     * @return objeto UserDetails que especifica username, password encriptado y sus roles
+     * @return objeto UserDetails que especifica username, password encriptado y sus roles.
      * @throws UsernameNotFoundException en caso de que el usuario no se encuentre en la BD.
      * */
     @Bean

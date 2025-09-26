@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * RestController (con ruta protegida) encargado de todas las consultas relacionadas
- * con los usuarios
+ * con los usuarios.
  * @author glunah2001
  * @see UserService
  * */
@@ -27,7 +27,7 @@ public class UserController {
     private final LegalPersonService legalPersonService;
 
     /**
-     * Función encargada de obtener el perfil propio de la persona
+     * Función encargada de obtener el perfil propio de la persona.
      * @param auth Authentication obtenida de los filtros de seguridad con la cual saber
      *             cuál usuario está solicitando su información personal.
      * @return un dto. Con toda la información pública no comprometida del usuario.
@@ -70,33 +70,72 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Función encargada de solicitar un único usuario por su username.
+     * Se espera un único usuario dado que los Username son únicos.
+     * @param username nombre de usuario de la persona a buscar.
+     * @return Dto. Con la información del usuario.
+     * */
     @GetMapping("/search/username")
     public ResponseEntity<?> findByUsername(@RequestParam String username) {
         return ResponseEntity.ok(userService.getPersonByUsername(username));
     }
 
+    /**
+     * Función encargada de solicitar un único usuario (persona física) por su id nacional.
+     * Se espera un único usuario dado que los id nacionales son únicos.
+     * @param id cédula de identidad de la persona a buscar.
+     * @return Dto. Con la información del usuario (persona física).
+     * */
     @GetMapping("/search/national-id")
     public ResponseEntity<?> findByNationalId(@RequestParam String id) {
         return ResponseEntity.ok(physicalPersonService.getPersonByNationalId(id));
     }
 
+    /**
+     * Función encargada de solicitar un único usuario (persona legal) por su id legal.
+     * Se espera un único usuario dado que los id legal son únicos.
+     * @param id cédula jurídica de la persona a buscar.
+     * @return Dto. Con la información del usuario (persona legal).
+     * */
     @GetMapping("/search/legal-id")
     public ResponseEntity<?> findByLegalId(@RequestParam String id) {
         return ResponseEntity.ok(legalPersonService.getPersonByLegalId(id));
     }
 
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas físicas)
+     * por un nombre determinado por el cliente.
+     * @param name nombre por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas físicas).
+     * */
     @GetMapping("/search/name")
     public ResponseEntity<?> findByName(@RequestParam String name,
                                         @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(physicalPersonService.getPersonByName(name, page));
     }
 
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas físicas)
+     * por un apellido determinado por el cliente.
+     * @param surname apellido por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas físicas).
+     * */
     @GetMapping("/search/surname")
     public ResponseEntity<?> findBySurname(@RequestParam String surname,
                                            @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(physicalPersonService.getPersonBySurname(surname, page));
     }
 
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas jurídicas)
+     * por un nombre de negocio determinado por el cliente.
+     * @param businessName nombre de negocio por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas jurídicas).
+     * */
     @GetMapping("/search/business")
     public ResponseEntity<?> findByBusinessName(@RequestParam String businessName,
                                                 @RequestParam(defaultValue = "0") int page) {

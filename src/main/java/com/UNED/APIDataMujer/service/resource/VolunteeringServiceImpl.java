@@ -45,6 +45,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     private final VolunteeringRepository volunteeringRepository;
     private final ActivityRepository activityRepository;
 
+    /**
+     * Función de interfaz. Función encargada de obtener del repositorio un voluntariado a través de su id único
+     * @param id identificador del voluntariado.
+     * @return Dto. Del voluntariado.
+     * @throws ResourceNotFoundException en caso de que el voluntariado no exista.
+     * */
     @Override
     public VolunteeringDTO getVolunteering(long id) {
         var volunteering = volunteeringRepository.findById(id)
@@ -59,8 +65,8 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     /**
      * Función de interfaz. Esta función se encarga de obtener todos los voluntariados
      * pendientes (de actividades sin finalizar) de la persona que solicita.
-     * @param auth credenciales de autentificación del usuario
-     * @return lista de voluntariados con detalles de la actividad
+     * @param auth credenciales de autentificación del usuario.
+     * @return lista de voluntariados con detalles de la actividad.
      * */
     @Override
     public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth, int page) {
@@ -75,7 +81,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     /**
      * Función de interfaz. Esta función se encarga de obtener todos los voluntariados
      * de una actividad.
-     * @param id id de la actividad a buscar
+     * @param id id de la actividad a buscar.
      * @return lista de voluntariados con detalles de la actividad.
      * */
     @Override
@@ -86,6 +92,16 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
+    /**
+     * Función de interfaz. Función encargada de insertar un voluntariado de organizador.
+     * Se ejecuta cuando una actividad es registrada. Rollback en caso de fallar.
+     * @param activity actividad del voluntariado.
+     * @param username usuario del voluntariado.
+     * @param startDate fecha de inicio del voluntariado.
+     * @param endDate fecha de fin del voluntariado.
+     * @throws BusinessValidationException en caso de que exista un conflicto de horarios del
+     * organizador.
+     * */
     @Override
     public void createOrganizerVolunteering(String username,
                                             Activity activity,
@@ -104,6 +120,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         volunteeringRepository.save(volunteering);
     }
 
+    /**
+     * Función de interfaz. Función encargada de analizar el lote de voluntariados
+     * antes de insertar los voluntariados.
+     * @return id de la actividad para consultar sus voluntariados.
+     * @throws BusinessValidationException en caso de que exista una inconsistencia en los voluntariados.
+     * */
     @Override
     @Transactional
     public long createVolunteering(VolunteeringWrapperDTO dto) {
@@ -120,6 +142,13 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return activityId;
     }
 
+    /**
+     * Función de interfaz. Función encargada de preparar la inserción de un voluntariado
+     * propio.
+     * @param dto Dto. Con información del voluntariado.
+     * @param auth credenciales del usuario.
+     * @return Dto. Del voluntariado insertado.
+     * */
     @Override
     @Transactional
     public VolunteeringDTO createMyVolunteering(final Authentication auth,
@@ -130,6 +159,14 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     }
 
 
+    /**
+     * Función de interfaz. Función encargada de insertar en la base de datos el voluntariado
+     * de un usuario.
+     * @param dto Dto. Con información del voluntariado.
+     * @return Dto. Del voluntariado insertado.
+     * @throws BusinessValidationException en caso de que una regla de negocio sea violada.
+     * @throws ResourceNotFoundException en caso de que no se encuentre el voluntariado del organizador.
+     * */
     @Transactional
     public VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
         var volunteeringData = dto.volunteeringData();
@@ -180,11 +217,24 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return volunteeringMapper.toDto(myVolunteering);
     }
 
+    /**
+     * Función auxiliar encargada de verificar que en un lote de voluntariados todos
+     * pertenezcan a una misma actividad.
+     * @param activityId actividad a la que deberían pertenecer los voluntariados.
+     * @param list lista de voluntariados.
+     * @return booleano válido/inválido.
+     * */
     private boolean sameActivityVolunteering(long activityId, List<VolunteeringRegisterDTO> list){
         return list.stream()
                 .allMatch(dto -> dto.volunteeringData().activityId() == activityId);
     }
 
+    /**
+     * Función auxiliar encargada de solicitar al repositorio una actividad por su id.
+     * @param id id único de la actividad.
+     * @return entidad Activity recuperada de la bd.
+     * @throws ResourceNotFoundException en caso que la actividad no exista o no pueda recuperarse.
+     * */
     private Activity getActivity(long id){
         return activityRepository.findById(id)
                 .orElseThrow(() ->

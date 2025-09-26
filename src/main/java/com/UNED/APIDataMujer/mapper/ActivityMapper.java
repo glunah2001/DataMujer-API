@@ -15,8 +15,9 @@ import org.springframework.stereotype.Component;
 public class ActivityMapper {
 
     /**
-     * Función principal. Transforma el DTO. En la entidad sin registrar en la BD
-     * @
+     * Función principal. Transforma el DTO. En la entidad Activity sin registrar en la BD
+     * @param dto Dto. Con datos de la nueva actividad.
+     * @return entidad Activity.
      * */
     public Activity toEntity(ActivityRegisterDTO dto){
         return Activity.builder()
@@ -30,6 +31,11 @@ public class ActivityMapper {
                 .build();
     }
 
+    /**
+     * Función principal. Transforma la entidad Activity en un dto.
+     * @param activity entidad recuperada de la bd.
+     * @return DTO. De la actividad.
+     * */
     public ActivityDTO toDto(Activity activity){
         return new ActivityDTO(
                 activity.getId(),

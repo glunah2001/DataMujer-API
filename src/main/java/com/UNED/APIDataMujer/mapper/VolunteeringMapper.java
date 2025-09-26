@@ -16,6 +16,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class VolunteeringMapper {
 
+    /**
+     * Función encargada de mapear una entidad Volunteering.
+     * Se usa únicamente para voluntariados de organizador Principal.
+     * @param user usuario al que pertenece el voluntariado.
+     * @param activity actividad al que pertenece el voluntariado.
+     * */
     public Volunteering toEntity(User user, Activity activity){
         return Volunteering.builder()
                 .activity(activity)
@@ -27,6 +33,11 @@ public class VolunteeringMapper {
                 .build();
     }
 
+    /**
+     * Función encargada de mapear una entidad Volunteering.
+     * @param user usuario al que pertenece el voluntariado.
+     * @param activity actividad al que pertenece el voluntariado.
+     * */
     public Volunteering toEntity(User user,
                                  Activity activity,
                                  VolunteeringRegisterDTO dto){
@@ -41,7 +52,7 @@ public class VolunteeringMapper {
     }
 
     /**
-     * Función encargada de mapear un DTO. Desde una entidad.
+     * Función encargada de mapear un DTO. Desde una entidad volunteering.
      * @param volunteering entidad recuperada de la BD.
      * @return DTO. Volunteering
      * */

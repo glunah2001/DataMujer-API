@@ -28,9 +28,9 @@ public class PersonRegisterController {
 
 
     /**
-     * Función encargada del registro de personas físicas como usuarios dentro del sistema
+     * Función encargada del registro de personas físicas como usuarios dentro del sistema.
      * @param physicalPersonRegisterDTO contiene toda la información de la persona
-     *                                  física para su almacenamiento
+     *                                  física para su almacenamiento.
      * @return un estado 201 CREATED avisando de la necesidad de activar su cuenta con un correo enviado.
      * */
     @PostMapping("/physical")
@@ -42,14 +42,14 @@ public class PersonRegisterController {
                 .queryParam("username", physicalPerson.username())
                 .build()
                 .toUri();
-        return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
-                "mediante el correo enviado a la dirección registrada.");
+        return ResponseEntity.created(location).body("Su cuenta ha sido creada. " +
+                "Confirme la activación de su cuenta mediante el correo enviado a la dirección registrada.");
     }
 
     /**
-     * Función encargada del registro de personas jurídicas como usuarios dentro del sistema
+     * Función encargada del registro de personas jurídicas como usuarios dentro del sistema.
      * @param legalPersonRegisterDTO contiene toda la información de
-     *                               la persona legal para su almacenamiento
+     *                               la persona legal para su almacenamiento.
      * @return un estado 201 CREATED avisando de la necesidad de activar su cuenta con un correo enviado.
      * */
     @PostMapping("/legal")
@@ -61,8 +61,8 @@ public class PersonRegisterController {
                 .queryParam("username", legalPerson.username())
                 .build()
                 .toUri();
-        return ResponseEntity.created(location).body("Su cuenta ha sido creada. Confirme la activación de su cuenta " +
-                "mediante el correo enviado a la dirección registrada.");
+        return ResponseEntity.created(location).body("Su cuenta ha sido creada. " +
+                "Confirme la activación de su cuenta mediante el correo enviado a la dirección registrada.");
     }
 
 }

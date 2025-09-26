@@ -18,11 +18,11 @@ import java.util.List;
 public class ApiErrorMapper {
 
     /**
-     * Mapeo manual a DTO de una excepción con detalles.
-     * @param status estado de respuesta (400, 404, 500, etc)
-     * @param message mensaje del error (Bad Request, Not FFound, etc)
-     * @param path ruta de endpoint en la cual ocurre el error
-     * @param details detalles del error (en caso de registro o actualización)
+     * Mapeo manual a DTO de una excepción con detalles..
+     * @param status estado de respuesta (400, 404, 500, etc).
+     * @param message mensaje del error (Bad Request, Not FFound, etc).
+     * @param path ruta de endpoint en la cual ocurre el error.
+     * @param details detalles del error (en caso de registro o actualización).
      * @return DTO de errores.
      * */
     public ApiError toDto(HttpStatus status, String message, String path, List<String> details){

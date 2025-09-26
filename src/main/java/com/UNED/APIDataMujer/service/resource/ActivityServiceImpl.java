@@ -41,6 +41,7 @@ public class ActivityServiceImpl implements ActivityService {
      * servicio encargado de esto
      * @param dto contiene toda la información de la nueva actividad.
      * @return la actividad registrada en la bd.
+     * @throws BusinessValidationException en caso de que alguna regla de negocio sea quebrantada
      * */
     @Override
     @Transactional
@@ -73,6 +74,7 @@ public class ActivityServiceImpl implements ActivityService {
      * Función encargada de retornar una actividad mediante búsqueda en la bd usando su id
      * @param id id de la actividad
      * @return datos de la actividad recuperada.
+     * @throws ResourceNotFoundException en caso de que la actividad no se pueda recuperar.
      * */
     @Override
     public ActivityDTO getActivityDto(long id) {
@@ -82,6 +84,11 @@ public class ActivityServiceImpl implements ActivityService {
         return activityMapper.toDto(activity);
     }
 
+    /**
+     * Función de interfaz que recupera todas las actividades no clausuradas y las numera.
+     * @param page indicador de paginación.
+     * @return página con metadata simple de las actividades.
+     * */
     @Override
     public SimplePage<ActivityDTO> getAllActiveActivities(int page) {
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());

@@ -25,7 +25,7 @@ public class HttpRedirectConfig {
 
     /**
      * Clase que define un conector tomcat HTTP como "no seguro" e indica
-     * que si alguien se conecta a este sea reenviado a uno que escuche HTTPS
+     * que si alguien se conecta a este sea reenviado a uno que escuche HTTPS.
      * @return conector con reenvío seguro.
      * */
     private Connector redirectConnector(){
