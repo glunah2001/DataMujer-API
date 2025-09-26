@@ -31,6 +31,32 @@ public class GlobalExceptionHandler {
 
     private final ApiErrorMapper apiErrorMapper;
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request){
+        ApiError error = apiErrorMapper.toDto(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
+    @ExceptionHandler(BusinessValidationException.class)
+    public ResponseEntity<ApiError> handleBusinessValidation(BusinessValidationException ex, HttpServletRequest request){
+        ApiError error = apiErrorMapper.toDto(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
     /**
      * Clase encargada de manejar la excepción personalizada ResourceNotFound. Estas se emiten
      * cuando un recurso que se busca no es encontrado en la BD.
@@ -38,11 +64,12 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> ResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request){
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
-                request.getRequestURI());
+                request.getRequestURI()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -56,11 +83,12 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(NotActiveUserException.class)
-    public ResponseEntity<ApiError> NotActiveUserHandler(NotActiveUserException ex, HttpServletRequest request){
+    public ResponseEntity<ApiError> handleNotActiveUser(NotActiveUserException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
                 HttpStatus.UNAUTHORIZED,
                 ex.getMessage(),
-                request.getRequestURI());
+                request.getRequestURI()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -74,11 +102,12 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> illegalArgumentHandler(IllegalArgumentException ex, HttpServletRequest request){
+    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
                 HttpStatus.BAD_REQUEST,
                 ex.getMessage(),
-                request.getRequestURI());
+                request.getRequestURI()
+        );
 
         return ResponseEntity
                 .badRequest()
@@ -92,11 +121,12 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ApiError> usernameNotFoundHandler(UsernameNotFoundException ex, HttpServletRequest request){
+    public ResponseEntity<ApiError> handleUsernameNotFound(UsernameNotFoundException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
-                request.getRequestURI());
+                request.getRequestURI()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -110,7 +140,7 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiError> authenticationExceptioHandler(AuthenticationException ex, HttpServletRequest request){
+    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request){
         ApiError error = apiErrorMapper.toDto(
                 HttpStatus.UNAUTHORIZED,
                 ex.getMessage(),
@@ -147,7 +177,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Error de validación",
                 request.getRequestURI(),
-                details);
+                details
+        );
 
         return ResponseEntity.badRequest().body(error);
     }
@@ -160,7 +191,8 @@ public class GlobalExceptionHandler {
      * @return un dto. Con los detalles del error.
      * */
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleDataIntegrityViolationException(DataIntegrityViolationException ex,
+                                                                          HttpServletRequest request) {
         Throwable cause = ex.getCause();
         String message;
         HttpStatus status;
@@ -178,7 +210,8 @@ public class GlobalExceptionHandler {
         ApiError error = apiErrorMapper.toDto(
                 status,
                 message,
-                request.getRequestURI());
+                request.getRequestURI()
+        );
 
         return ResponseEntity.status(status).body(error);
     }

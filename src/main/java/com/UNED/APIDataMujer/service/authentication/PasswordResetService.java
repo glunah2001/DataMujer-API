@@ -2,6 +2,8 @@ package com.UNED.APIDataMujer.service.authentication;
 
 import com.UNED.APIDataMujer.dto.authentication.ResetPasswordDTO;
 import com.UNED.APIDataMujer.enums.TokenType;
+import com.UNED.APIDataMujer.exception.InvalidTokenException;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
@@ -39,8 +41,9 @@ public class PasswordResetService {
     public void forgotPassword(final String email){
         final var user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("El email: "+email+" no se encuentra registrado a " +
-                        "ningún usuario actualmente."));
+                        new ResourceNotFoundException("No se ha encontrado ningún usuario registrado con el " +
+                                "email: "+email+".")
+                );
 
         tokenService.revokeAllActiveTokens(user);
 
@@ -48,9 +51,12 @@ public class PasswordResetService {
         final String resetToken = tokenService.generateToken(expiration);
         tokenService.saveToken(resetToken, user, TokenType.PASSWORD_RESET);
 
-        String message = String.format("Este es su token de restablecimiento de contraseña: %s.\n" +
-                "Ingrese dicho token en el espacio indicado en la aplicación junto a su nueva contraseña " +
-                "para hacer efectivo el cambio.",resetToken);
+        String message = String.format("""
+                Este es su token de restablecimiento de contraseña:
+                %s
+                Ingrese dicho token en el espacio indicado en la aplicación junto con su nueva contraseña.
+                Bajo ningún motivo comparta este token con ningúna otra persona.
+                """, resetToken);
 
         emailSendingService.sendEmail(email,
                 "Restablecimiento de Contraseña",
@@ -68,15 +74,17 @@ public class PasswordResetService {
     public void resetPassword(final ResetPasswordDTO dto){
         final var token = tokenRepository.findByToken(dto.token())
                 .orElseThrow(() ->
-                        new IllegalArgumentException("El token ingresado no es válido"));
+                        new ResourceNotFoundException("El token ingresado no se ha encontrado en la base de datos."));
 
         if(token.isExpired() || token.isRevoked()){
-            throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
+            throw new InvalidTokenException("El token proporcionado es inválido: " +
+                    "Se encuentra marcado como expirado o revocado.");
         }
 
         if(tokenService.isTokenExpired(token)){
             tokenService.revokeToken(token);
-            throw new IllegalArgumentException("Este token de restablecimiento de contraseña ha caducado.");
+            throw new InvalidTokenException("El token proporcionado es inválido: " +
+                    "Su tiempo de vida válido ha concluido.");
         }
 
         var user = token.getUser();

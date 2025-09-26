@@ -3,6 +3,7 @@ package com.UNED.APIDataMujer.service.resource;
 import com.UNED.APIDataMujer.dto.request.CommonUpdateDTO;
 import com.UNED.APIDataMujer.dto.response.ProfileDTO;
 import com.UNED.APIDataMujer.entity.User;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -60,7 +61,9 @@ public class UserServiceImpl implements UserService{
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("El usuario "+username+" no se encuentra registrado."));
+                        new ResourceNotFoundException("No se ha encontrado ningún usuario registrado con el " +
+                                "nombre de usuario: "+username+".")
+                );
     }
 
     /**

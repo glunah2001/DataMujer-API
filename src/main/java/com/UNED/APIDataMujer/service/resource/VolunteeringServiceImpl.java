@@ -7,6 +7,7 @@ import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Volunteering;
+import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.VolunteeringMapper;
@@ -47,9 +48,11 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     @Override
     public VolunteeringDTO getVolunteering(long id) {
         var volunteering = volunteeringRepository.findById(id)
-                .orElseThrow(() -> new
-                        ResourceNotFoundException("El voluntariado referenciado con " +
-                        "id "+ id +" no se ha encontrado"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No se ha encontrado un voluntariado registrado " +
+                                "con el id: "+id+".")
+                );
+
         return volunteeringMapper.toDto(volunteering);
     }
 
@@ -60,12 +63,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * @return lista de voluntariados con detalles de la actividad
      * */
     @Override
-    public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth,
-                                                                @RequestParam(defaultValue = "0") int page) {
+    public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth, int page) {
         final var user = userService.getMyUser(auth);
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
-        Page<Volunteering> volunteering = volunteeringRepository
-                                            .findByUserIdAndActivityIsFinalizedFalse(user.getId(), pageable);
+        Page<Volunteering> volunteering =
+                volunteeringRepository.findByUserIdAndActivityIsFinalizedFalse(user.getId(), pageable);
+
         return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
@@ -76,11 +79,10 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * @return lista de voluntariados con detalles de la actividad.
      * */
     @Override
-    public SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id,
-                                                                    @RequestParam(defaultValue = "0") int page) {
+    public SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id, int page) {
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
-        Page<Volunteering> volunteering = volunteeringRepository
-                                            .findByActivityId(id, pageable);
+        Page<Volunteering> volunteering =
+                volunteeringRepository.findByActivityId(id, pageable);
         return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
@@ -95,11 +97,10 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var conflict = volunteeringRepository.existsOrganizerConflict(
                 user.getId(), startDate, endDate);
         if(conflict)
-            throw new IllegalArgumentException("El usuario "+username+" ya organiza " +
-                    "una actividad cuyo horario entra en conflicto con la que desea crear.");
+            throw new BusinessValidationException("El usuario "+username+" ya organiza una actividad " +
+                    "cuyo horario entra en conflicto con esta nueva actividad.");
 
         var volunteering = volunteeringMapper.toEntity(user, activity);
-
         volunteeringRepository.save(volunteering);
     }
 
@@ -108,12 +109,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     public long createVolunteering(VolunteeringWrapperDTO dto) {
         var list = dto.volunteering();
         if(list.isEmpty())
-            throw new IllegalArgumentException("Información de voluntariados vacía");
+            throw new BusinessValidationException("El lote voluntariados está vacío.");
 
         var activityId = dto.activityId();
         if(!sameActivityVolunteering(activityId, list))
-            throw new IllegalArgumentException(("Inconsistencia de datos detectada: Voluntariados para " +
-                    "diferentes actividades."));
+            throw new BusinessValidationException("Existe una inconsistencia en el lote voluntariados: " +
+                    "No todos los voluntariados están dirigidos a la misma actividad");
 
         list.forEach(this::createVolunteering);
         return activityId;
@@ -137,36 +138,42 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var username = dto.username();
 
         if(activity.isFinalized())
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" se está registrando en una actividad clausurada.");
+            throw new BusinessValidationException("El voluntariado del usuario "+username+
+                    " no se puede llevar a cabo porque se pretende registrar en una actividad concluida.");
 
         if(!dto.volunteeringData().startShift().isBefore(dto.volunteeringData().endShift()))
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" indica que la fecha de inicio está después de la fecha de " +
-                    "cierre de su turno.");
+            throw new BusinessValidationException("El voluntariado del usuario "+username+
+                    " no se puede llevar a cabo porque la fecha de inicio está después de la fecha " +
+                    "de cierre de su turno.");
 
         if(dto.volunteeringData().startShift().isBefore(activity.getStartDate()) ||
                 dto.volunteeringData().endShift().isAfter(activity.getEndDate()))
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" se está registrando fuera del rango de la actividad.");
+            throw new BusinessValidationException("El voluntariado del usuario "+username+
+                    " no se puede llevar a cabo porque su fecha de voluntariado está fuera del rango " +
+                    "de la actividad.");
 
-        var shiftLength = ChronoUnit.HOURS.between(dto.volunteeringData().startShift(), dto.volunteeringData().endShift());
+        var shiftLength = ChronoUnit.HOURS.between(dto.volunteeringData().startShift(),
+                dto.volunteeringData().endShift());
+
         if(shiftLength < 1 || shiftLength> 8)
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El voluntariado " +
-                    "del usuario "+username+" debe abarcar una cantidad de horas razonables. " +
-                    "De 1 a 8 horas por turno.");
+            throw new BusinessValidationException("El voluntariado del usuario "+username+
+                    " no se puede llevar a cabo porque los turnos deben abarcar de 1 hora mínimo " +
+                    "a 8 horas máximo.");
 
         final var user = userService.getUserByUsername(username);
         var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al consultar organizador " +
-                        "de la actividad"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("El voluntariado del usuario "+username+
+                                " no se puede llevar a cabo porque no se pudo consultar al organizador" +
+                                "de la actividad."));
 
         var sameOrganizerConflict = volunteeringRepository.existsConflictWithSameOrganizer(
                 user.getId(), organizerId, activity.getId(), dto.volunteeringData().startShift(), dto.volunteeringData().endShift());
 
         if(sameOrganizerConflict)
-            throw new IllegalArgumentException("Inconsistencia de datos detectada: El usuario "+username +
-                    "no puede tener turnos que solapen en actividades del mismo organizador");
+            throw new BusinessValidationException("El voluntariado del usuario "+username+
+                    " no se puede llevar a cabo porque no puede participar en dos actividades " +
+                    "del mismo organizador que se lleguen a solapar");
 
         var volunteering = volunteeringMapper.toEntity(user, activity, dto);
         var myVolunteering = volunteeringRepository.save(volunteering);

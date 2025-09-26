@@ -6,6 +6,7 @@ import com.UNED.APIDataMujer.dto.response.LegalPersonDTO;
 import com.UNED.APIDataMujer.entity.LegalPerson;
 import com.UNED.APIDataMujer.entity.Person;
 import com.UNED.APIDataMujer.entity.User;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
 import com.UNED.APIDataMujer.mapper.PersonMapper;
 import com.UNED.APIDataMujer.repository.LegalPersonRepository;
@@ -25,12 +26,14 @@ public class LegalPersonServiceImpl implements LegalPersonService{
     private final LegalPersonRepository legalPersonRepository;
     private final PersonMapper personMapper;
 
-
     @Override
     public LegalPersonDTO getPersonByLegalId(String legalId) {
         var lp = legalPersonRepository.findByLegalId(legalId)
-                .orElseThrow(() -> new IllegalArgumentException("La persona jurídica con " +
-                        "identificación "+legalId+" no fue encontrada."));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("La persona con cédula legal: "+legalId+
+                                "no se encuentra registrada.")
+                );
+
         var user = getUserByPerson(lp.getPerson());
         return personMapper.toDto(user, lp);
     }
@@ -66,13 +69,17 @@ public class LegalPersonServiceImpl implements LegalPersonService{
 
     private LegalPerson getLegalPerson(User user){
         return legalPersonRepository.findById(user.getPerson().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Ocurrió un error al " +
-                        "intentar obtener su información"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No es posible recuperar información " +
+                                "de su persona.")
+                );
     }
 
     private User getUserByPerson(Person person){
         return userRepository.findByPerson(person)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("El usuario no se ha encontrado."));
+                        new ResourceNotFoundException("No es posible recuperar información " +
+                                "de su persona.")
+                );
     }
 }

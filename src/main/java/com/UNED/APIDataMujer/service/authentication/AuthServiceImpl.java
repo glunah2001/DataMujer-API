@@ -4,7 +4,9 @@ import com.UNED.APIDataMujer.dto.authentication.UserLoginDTO;
 import com.UNED.APIDataMujer.dto.token.TokenResponse;
 import com.UNED.APIDataMujer.entity.*;
 import com.UNED.APIDataMujer.enums.TokenType;
+import com.UNED.APIDataMujer.exception.InvalidTokenException;
 import com.UNED.APIDataMujer.exception.NotActiveUserException;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.*;
 import com.UNED.APIDataMujer.service.jwt.JwtService;
 import com.UNED.APIDataMujer.service.registration.ActivationService;
@@ -75,10 +77,11 @@ public class AuthServiceImpl implements AuthService{
 
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("El usuario no se encuentra registrado en el sistema."));
+                        new ResourceNotFoundException("El usuario indicado en el JWT no se haya registrado."));
 
         if(!jwtService.isTokenValid(token, user))
-            throw new IllegalArgumentException("El token de refresco es inválido.");
+            throw new InvalidTokenException("El token proporcionado es inválido: " +
+                    "Puede no pertenecer a su usuario o haber concluido su vida útil.");
 
         return tokenGeneration(user);
     }

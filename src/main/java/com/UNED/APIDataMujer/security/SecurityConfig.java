@@ -2,6 +2,7 @@ package com.UNED.APIDataMujer.security;
 
 import com.UNED.APIDataMujer.dto.ApiError;
 import com.UNED.APIDataMujer.entity.Token;
+import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ApiErrorMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.security.filter.JwtAuthFilter;
@@ -106,7 +107,8 @@ public class SecurityConfig{
         final String jwtToken = authHeader.substring(7);
         final Token foundToken = tokenRepository.findByToken(jwtToken)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("El token de Acceso proporcionado no está registrado"));
+                        new ResourceNotFoundException("El token ingresado no se ha " +
+                                "encontrado en la base de datos."));
         foundToken.setRevoked(true);
         foundToken.setExpired(true);
         tokenRepository.save(foundToken);

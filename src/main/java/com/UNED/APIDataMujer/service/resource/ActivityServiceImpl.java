@@ -4,6 +4,7 @@ import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.ActivityRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.ActivityDTO;
 import com.UNED.APIDataMujer.entity.Activity;
+import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ActivityMapper;
 import com.UNED.APIDataMujer.mapper.PaginationUtil;
@@ -48,17 +49,17 @@ public class ActivityServiceImpl implements ActivityService {
         var endDate = dto.endDate();
 
         if(startDate.isBefore(LocalDateTime.now().plusDays(1)))
-            throw new IllegalArgumentException("La actividad debe anunciarse con al manos 1 día " +
-                    "de antelación");
+            throw new BusinessValidationException("La actividad debe anunciarse como mínimo 1 día " +
+                    "de antelación.");
 
         if(startDate.isAfter(endDate))
-            throw new IllegalArgumentException("La fecha de inicio de la actividad no puede estar " +
-                    "antes que la fecha de cierre");
+            throw new BusinessValidationException("La fecha de inicio de la actividad no puede estar " +
+                    "antes que la fecha de cierre.");
 
         var duration = Duration.between(startDate, endDate);
         if(duration.toMinutes() < 60)
-            throw new IllegalArgumentException("La duración mínima de la actividad debe ser de " +
-                    "1 hora (60 minutos)");
+            throw new BusinessValidationException("La duración mínima de la actividad debe ser de " +
+                    "1 hora (60 minutos).");
 
         var newActivity = activityMapper.toEntity(dto);
         final var activity = activityRepository.save(newActivity);
