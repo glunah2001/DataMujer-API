@@ -100,6 +100,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    @Transactional
     public void deleteActivity(long id, final Authentication auth) {
         final var activity = activityRepository.findById(id)
                 .orElseThrow(() ->
