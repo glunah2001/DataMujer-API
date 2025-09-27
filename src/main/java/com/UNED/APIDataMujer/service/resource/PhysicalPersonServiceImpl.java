@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +85,7 @@ public class PhysicalPersonServiceImpl implements PhysicalPersonService{
      * @return Dto. De la persona con la nueva información.
      * */
     @Override
+    @Transactional
     public PhysicalPersonDTO updateMyPhysicalProfile(User user, PhysicalPersonUpdateDTO dto) {
         var physicalPerson = getPhysicalPerson(user);
 

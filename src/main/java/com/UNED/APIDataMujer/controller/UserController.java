@@ -83,7 +83,7 @@ public class UserController {
 
     /**
      * Función encargada de solicitar un único usuario (persona física) por su id nacional.
-     * Se espera un único usuario dado que los id nacionales son únicos.
+     * Se espera un único usuario dado que los di nacionales son únicos.
      * @param id cédula de identidad de la persona a buscar.
      * @return Dto. Con la información del usuario (persona física).
      * */
@@ -94,7 +94,7 @@ public class UserController {
 
     /**
      * Función encargada de solicitar un único usuario (persona legal) por su id legal.
-     * Se espera un único usuario dado que los id legal son únicos.
+     * Se espera un único usuario dado que los di legal son únicos.
      * @param id cédula jurídica de la persona a buscar.
      * @return Dto. Con la información del usuario (persona legal).
      * */

@@ -1,7 +1,7 @@
 package com.UNED.APIDataMujer.controller;
 
 import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
-import com.UNED.APIDataMujer.dto.request.VolunteeringRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.VolunteeringUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.service.resource.VolunteeringService;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 /**
  * RestController encargado de manejar las solicitudes relacionadas con los voluntariados
@@ -106,6 +105,34 @@ public class VolunteeringController {
                 .build()
                 .toUri();
         return ResponseEntity.created(location).body(volunteering);
+    }
+
+    /**
+     * Función encargada de actualizar un voluntariado propio.
+     * @param id identificador del voluntariado a modificar.
+     * @param dto nuevos datos del voluntariado.
+     * @return Dto. Con los datos del voluntariado actualizado.
+     * */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<?> updateVolunteering(@PathVariable long id,
+                                                @Valid @RequestBody VolunteeringUpdateDTO dto){
+        var volunteering = volunteeringService.updateVolunteering(id, dto);
+        return ResponseEntity.ok(volunteering);
+    }
+
+    /**
+     * Función encargada de eliminar un voluntariado.
+     * @param id identificador del voluntariado a dar de bajo.
+     * @param auth credenciales del usuario.
+     * @return código 204. Éxito sin contenido que retornar.
+     * */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<?> deleteVolunteering(@PathVariable long id,
+                                                final Authentication auth){
+        volunteeringService.deleteVolunteering(id, auth);
+        return ResponseEntity.noContent().build();
     }
 
 }

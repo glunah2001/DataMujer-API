@@ -159,6 +159,13 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return createVolunteering(volunteering);
     }
 
+    /**
+     * Función de interfaz encargada de verificar si el usuario relacionado con una actividad
+     * es el organizador de la misma.
+     * @param activityId identificador de la actividad.
+     * @param userId identificador del usuario.
+     * @return booleano de confirmación o negación.
+     * */
     @Override
     public boolean isUserOrganizer(long activityId, long userId) {
         var organizerId = volunteeringRepository
@@ -169,7 +176,17 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return organizerId.equals(userId);
     }
 
+    /**
+     * Función de interfaz. Se encarga de actualizar a los voluntariados propios de una
+     * persona.
+     * @param volunteeringId identificador del voluntariado a actualizar.
+     * @param dto nueva información del voluntariado.
+     * @throws ResourceNotFoundException en caso de que el voluntariado original no pueda ser recuperado de la bd.
+     * @throws BusinessValidationException en caso de que el voluntariado no pueda ser actualizado por ser el
+     * voluntariado del organizador.
+     * */
     @Override
+    @Transactional
     public VolunteeringDTO updateVolunteering(long volunteeringId, final VolunteeringUpdateDTO dto) {
         var volunteering = volunteeringRepository.findById(volunteeringId)
                 .orElseThrow(() ->
@@ -184,7 +201,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
 
         final var user = volunteering.getUser();
 
-        validationRules(activity,
+        validateVolunteering(activity,
                 dto.startShift(),
                 dto.endShift(),
                 user.getId(),
@@ -198,6 +215,15 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         return volunteeringMapper.toDto(updatedVolunteering);
     }
 
+    /**
+     * Función de interfaz. Se encarga de dar de baja a un voluntariado.
+     * @param volunteeringId identificador del voluntariado a dar de baja.
+     * @param auth credenciales del usuario que desea eliminar el voluntariado.
+     * @throws ResourceNotFoundException en caso de que el voluntariado no exista en la base de datos.
+     * @throws BusinessValidationException en caso de que el voluntariado no pueda ser eliminado por
+     * ya sea porque es el voluntariado del organizador principal; o en caso de no ser administrador
+     * la actividad está cerrada o el usuario no sea el organizador principal.
+     * */
     @Override
     @Transactional
     public void deleteVolunteering(long volunteeringId, final Authentication auth) {
@@ -244,7 +270,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         final var user = userService.getUserByUsername(username);
 
 
-        validationRules(activity,
+        validateVolunteering(activity,
                 dto.volunteeringData().startShift(),
                 dto.volunteeringData().endShift(),
                 user.getId(),
@@ -279,11 +305,23 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                         new ResourceNotFoundException("La actividad con id "+id+" no se ha encontrado."));
     }
 
-    private void validationRules(Activity activity, LocalDateTime startShift,
-                                   LocalDateTime endShift, long userId, String username){
+    /**
+     * Función auxiliar encargada de validar los datos de un voluntariado a persistir.
+     * @param activity actividad del voluntariado.
+     * @param startShift fecha y hora inicial del turno del voluntariado.
+     * @param endShift fecha y hora final del turno del voluntariado.
+     * @param userId identificador del usuario que realizará el voluntariado.
+     * @param username username del usuario que realizará el voluntariado.
+     * @throws BusinessValidationException en caso de que alguna regla de negocio sea quebrantada:
+     * actividad finalizada, fecha de inicio posterior a la de fin, horas de voluntariado inválidas o
+     * se inscriba en dos actividades de un mismo organizador que se solapen.
+     * @throws ResourceNotFoundException en caso de que no se pueda recuperar el organizador de la actividad.
+     * */
+    private void validateVolunteering(Activity activity, LocalDateTime startShift,
+                                      LocalDateTime endShift, long userId, String username){
         if(activity.isFinalized())
-            throw new BusinessValidationException("La operación de voluntariado del usuario " + username +
-                    " no se puede llevar a cabo porque la actividad está concluida.");
+            throw new BusinessValidationException("La operación de voluntariado del usuario "
+                    + username + " no se puede llevar a cabo porque la actividad está concluida.");
 
         if(!startShift.isBefore(endShift))
             throw new BusinessValidationException("La operación de voluntariado del usuario "
