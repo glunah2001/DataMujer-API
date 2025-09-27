@@ -99,6 +99,15 @@ public class ActivityServiceImpl implements ActivityService {
         return PaginationUtil.wrapInPage(activities, activityMapper::toDto);
     }
 
+    /**
+     * Función de interfaz que elimina una actividad siempre y cuando:
+     * 1. El usuario es administrador del sistema.
+     * 2. Si el usuario no es administrador, debe ser el organizador de la actividad.
+     * @param id identificador de la actividad.
+     * @param auth credenciales de la actividad.
+     * @throws ResourceNotFoundException en caso de que la actividad no sea encontrada por id.
+     * @throws BusinessValidationException en caso de que el usuario no sea organizador ni administrador del sistema.
+     * */
     @Override
     @Transactional
     public void deleteActivity(long id, final Authentication auth) {

@@ -2,6 +2,7 @@ package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.BaseVolunteeringRegisterDTO;
+import com.UNED.APIDataMujer.dto.request.VolunteeringUpdateDTO;
 import com.UNED.APIDataMujer.dto.request.VolunteeringWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.VolunteeringDTO;
 import com.UNED.APIDataMujer.entity.Activity;
@@ -21,4 +22,6 @@ public interface VolunteeringService {
     long createVolunteering(VolunteeringWrapperDTO dto);
     VolunteeringDTO createMyVolunteering(Authentication auth, BaseVolunteeringRegisterDTO dto);
     boolean isUserOrganizer(long activityId, long userId);
+    VolunteeringDTO updateVolunteering(long volunteeringId, VolunteeringUpdateDTO dto);
+    void deleteVolunteering(long volunteeringId, Authentication auth);
 }

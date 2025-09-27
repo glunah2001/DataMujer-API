@@ -67,6 +67,12 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
+    /**
+     * Función encargada de dar de baja una actividad.
+     * @param id identificador de la actividad.
+     * @param auth credenciales del usuario mentor/administrador.
+     * @return se espera un código 204 (Éxito pero sin contenido que retornar)
+     * */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> deleteActivity(@PathVariable long id,

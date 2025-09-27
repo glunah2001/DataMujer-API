@@ -86,6 +86,12 @@ public class UserServiceImpl implements UserService{
         return userRepository.save(myUser);
     }
 
+    /**
+     * Función auxiliar que solicita información de una persona dependiendo del tipo de persona que sea
+     * el usuario.
+     * @param user usuario del cual recuperar los datos.
+     * @return información de la persona en un dto.
+     * */
     private ProfileDTO mapUserToProfileDTO(User user){
         return switch(user.getPerson().getPersonType()){
             case FISICA -> physicalPersonService.toDto(user);
