@@ -1,0 +1,105 @@
+package com.UNED.APIDataMujer.controller;
+
+import com.UNED.APIDataMujer.service.resource.ParticipationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+
+/**
+ * Endpoints para las participaciones.
+ * @author glunah2001
+ * @see ParticipationService
+ * */
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/participation")
+public class ParticipationController {
+
+    private final ParticipationService participationService;
+
+    /**
+     * Endpoint para recuperar una participación.
+     * @param participationId identificador de la participación.
+     * @return información de la participación en DTO.
+     * */
+    @GetMapping
+    public ResponseEntity<?> getParticipation(long participationId){
+        var participation = participationService.getParticipation(participationId);
+        return ResponseEntity.ok(participation);
+    }
+
+    /**
+     * endpoint para solicitar mis participaciones.
+     * @param auth credenciales de usuario.
+     * @param page paginación.
+     * @return paginado con los endpoints de las participaciones en actividades sin clausurar
+     * */
+    @GetMapping
+    public ResponseEntity<?> getMyParticipation(final Authentication auth,
+                                                @RequestParam(defaultValue = "0") int page){
+        var participation = participationService.getMyParticipations(auth, page);
+        return ResponseEntity.ok(participation);
+    }
+
+    /**
+     * Endpoint para crear una participación en una actividad.
+     * @param auth credenciales.
+     * @param activityId identificador de la actividad.
+     * @return código 201 y el contenido de la participación junto a su ruta de consulta.
+     * */
+    @PostMapping("/create")
+    public ResponseEntity<?> createParticipation(final Authentication auth,
+                                                 @RequestParam long activityId){
+        var participation = participationService.createParticipation(auth, activityId);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/participation")
+                .queryParam("id", participation.id())
+                .build()
+                .toUri();
+        return ResponseEntity.created(location).body(participation);
+    }
+
+    /**
+     * Endpoint para indicar al sistema que la participación se ha puesto en marcha.
+     * @param auth credenciales.
+     * @param participationId identificador de la participación.
+     * @return contenido actualizado de la participación.
+     * */
+    @PutMapping("/start")
+    public ResponseEntity<?> startParticipation(final Authentication auth,
+                                                @RequestParam long participationId){
+        var participation = participationService.updateStartDate(auth, participationId);
+        return ResponseEntity.ok(participation);
+    }
+
+    /**
+     * Endpoint para indicar al sistema que la participación se ha cancelado. (cierre antes de tiempo)
+     * @param auth credenciales.
+     * @param participationId identificador de la participación.
+     * @return contenido actualizado de la participación.
+     * */
+    @PutMapping("/cancel")
+    public ResponseEntity<?> cancelParticipation(final Authentication auth,
+                                                 @RequestParam long participationId){
+        var participation = participationService.cancelParticipation(auth, participationId);
+        return ResponseEntity.ok(participation);
+    }
+
+    /**
+     * Endpoint para eliminar una participación.
+     * @param auth credenciales.
+     * @param participationId identificador de la participación.
+     * @return código 204.
+     * */
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteParticipation(final Authentication auth,
+                                                 @RequestParam long participationId){
+        participationService.deleteParticipation(auth, participationId);
+        return ResponseEntity.noContent().build();
+    }
+}
