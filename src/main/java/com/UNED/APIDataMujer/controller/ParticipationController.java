@@ -27,7 +27,7 @@ public class ParticipationController {
      * @return información de la participación en DTO.
      * */
     @GetMapping
-    public ResponseEntity<?> getParticipation(long participationId){
+    public ResponseEntity<?> getParticipation(@RequestParam long participationId){
         var participation = participationService.getParticipation(participationId);
         return ResponseEntity.ok(participation);
     }
@@ -38,7 +38,7 @@ public class ParticipationController {
      * @param page paginación.
      * @return paginado con los endpoints de las participaciones en actividades sin clausurar
      * */
-    @GetMapping
+    @GetMapping("/me")
     public ResponseEntity<?> getMyParticipation(final Authentication auth,
                                                 @RequestParam(defaultValue = "0") int page){
         var participation = participationService.getMyParticipations(auth, page);

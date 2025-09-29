@@ -10,6 +10,7 @@ public record ParticipationDTO(
         LocalDate registerDate,
         LocalDate startDate,
         LocalDate endDate,
+        String username,
         long activityId,
         String activity,
         String description,

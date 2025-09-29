@@ -27,6 +27,7 @@ public class ParticipationMapper {
                 participation.getRegistrationDate(),
                 participation.getStartDate(),
                 participation.getEndDate(),
+                participation.getUser().getUsername(),
                 participation.getActivity().getId(),
                 participation.getActivity().getActivity(),
                 participation.getActivity().getDescription(),
