@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 public class ParticipationServiceImpl implements ParticipationService{
 
     private final UserService userService;
+    private final VolunteeringService volunteeringService;
     private final ParticipationMapper participationMapper;
     private final ActivityRepository activityRepository;
     private final ParticipationRepository participationRepository;
@@ -44,6 +45,22 @@ public class ParticipationServiceImpl implements ParticipationService{
     public ParticipationDTO getParticipation(long participationId) {
         var participation = getParticipationById(participationId);
         return participationMapper.toDto(participation);
+    }
+
+    @Override
+    public SimplePage<ParticipationDTO> getActivityParticipation(final Authentication auth,
+                                                                 long activityId,
+                                                                 int page) {
+
+        final var user = userService.getMyUser(auth);
+        if(!volunteeringService.isUserOrganizer(activityId, user.getId()) &&
+                user.getRole() != Role.ROLE_ADMIN)
+            throw new BusinessValidationException("La actividad "+activityId+" y sus participaciones no " +
+                    "pueden ser consultadas por su persona");
+
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        var participation = participationRepository.findByActivityId(activityId, pageable);
+        return PaginationUtil.wrapInPage(participation, participationMapper::toDto);
     }
 
     /**
@@ -167,7 +184,7 @@ public class ParticipationServiceImpl implements ParticipationService{
         return participationRepository.findById(participationId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("La participación "+participationId+" no fue encontrada " +
-                                "para llevar a cabo la actualización"));
+                                "para llevar a cabo la operación"));
     }
 
     /**

@@ -3,6 +3,7 @@ package com.UNED.APIDataMujer.controller;
 import com.UNED.APIDataMujer.service.resource.ParticipationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -29,6 +30,21 @@ public class ParticipationController {
     @GetMapping
     public ResponseEntity<?> getParticipation(@RequestParam long participationId){
         var participation = participationService.getParticipation(participationId);
+        return ResponseEntity.ok(participation);
+    }
+
+    /**
+     * Endpoint para consultar todas las participaciones de una actividad sin importar su estado.
+     * @param auth credenciales.
+     * @param activityId identificador de la actividad.
+     * @param page pagina.
+     * */
+    @GetMapping("/activity")
+    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<?> getActivityParticipation(final Authentication auth,
+                                                      @RequestParam long activityId,
+                                                      @RequestParam(defaultValue = "0") int page){
+        var participation = participationService.getActivityParticipation(auth, activityId, page);
         return ResponseEntity.ok(participation);
     }
 

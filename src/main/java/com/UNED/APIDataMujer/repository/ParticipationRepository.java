@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
+    Page<Participation> findByActivityId(Long activityId, Pageable pageable);
     Page<Participation> findByUserIdAndActivityIsFinalizedFalseAndStatusNot(Long userid,
                                                                             ParticipationState excludedState,
                                                                             Pageable pageable);

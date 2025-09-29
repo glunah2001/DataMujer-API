@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 
 public interface ParticipationService {
     ParticipationDTO getParticipation(long participationId);
+    SimplePage<ParticipationDTO> getActivityParticipation(Authentication auth, long activityId, int page);
     SimplePage<ParticipationDTO> getMyParticipations(Authentication authentication, int page);
     ParticipationDTO createParticipation(Authentication auth, long activityId);
     ParticipationDTO updateStartDate(Authentication auth, long participationId);
