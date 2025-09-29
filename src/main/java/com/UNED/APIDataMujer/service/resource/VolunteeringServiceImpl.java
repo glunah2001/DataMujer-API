@@ -111,6 +111,10 @@ public class VolunteeringServiceImpl implements VolunteeringService{
 
         final var user = userService.getUserByUsername(username);
 
+        if(!user.isActive())
+            throw new BusinessValidationException("Por integridad y consistencia de los datos, la actividad no " +
+                    "puede ser organizada por una persona cuya cuenta está inactiva actualmente.");
+
         var conflict = volunteeringRepository.existsOrganizerConflict(
                 user.getId(), startDate, endDate);
         if(conflict)
