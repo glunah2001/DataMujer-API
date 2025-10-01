@@ -2,30 +2,29 @@ package com.UNED.APIDataMujer.dto.request;
 
 import com.UNED.APIDataMujer.enums.Classification;
 import com.UNED.APIDataMujer.enums.Method;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PaymentRegisterDTO(
-        @NotBlank(message = "La descripción no puede ser nula ni vacía")
+        @NotBlank(message = "El dato \"descripción\" es obligatorio")
         String description,
-        @NotNull(message = "La clasificación no puede ser nula")
+        @NotNull(message = "El dato \"clasificación\" es obligatorio")
         Classification classification,
-        @NotNull(message = "El método de pago no puede ser nulo")
+        @NotNull(message = "El dato \"método de pago\" es obligatorio")
         Method method,
-        @NotBlank(message = "El campo monthYearPayment no puede ser nulo ni vacío")
+        @NotBlank(message = "El dato \"mes y año correspondiente\" es obligatorio")
         @Pattern(regexp = "^(\\d{4})-(0[1-9]|1[0-2])$",
-                message = "monthYearPayment debe tener el formato YYYY-MM"
+                message = "Defina el mes y año de pago en formato YYYY-MM"
         )
         String monthYearPayment,
+        @PastOrPresent(message = "El dato \"Fecha de pago\" debe presentar una fecha válida actual o pasada que " +
+                "pueda contrastarse.")
         LocalDateTime paymentDate,
-        @NotNull(message = "El campo isPaid no puede ser nulo")
+        @NotNull(message = "El dato \"Está pagado\" es obligatorio")
         Boolean isPaid,
-        @NotNull(message = "El monto total no puede ser nulo")
+        @NotNull(message = "El dato \"Monto\" es obligatorio")
         @DecimalMin(value = "0.0", inclusive = false, message = "El monto total debe ser mayor que 0")
         BigDecimal totalAmount
 ) { }

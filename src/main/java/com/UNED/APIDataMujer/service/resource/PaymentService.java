@@ -3,6 +3,7 @@ package com.UNED.APIDataMujer.service.resource;
 import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.PaymentRegisterDTO;
 import com.UNED.APIDataMujer.dto.response.PaymentDTO;
+import com.UNED.APIDataMujer.entity.User;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
@@ -16,4 +17,6 @@ public interface PaymentService {
                              PaymentRegisterDTO dto);
     PaymentDTO updatePaidRecord(Authentication auth, long id, LocalDateTime paymentDate);
     PaymentDTO updateNonPaidRecord(long id);
+    void updateAffiliateStatus(User user);
+    void deletePayment(long id);
 }
