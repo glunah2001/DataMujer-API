@@ -31,7 +31,7 @@ public class PaymentController {
      * @return dto. Con información del pago.
      * */
     @GetMapping
-    public ResponseEntity<?> getPayment(@RequestParam long id){
+    public ResponseEntity<?> getPayment(@RequestParam(defaultValue = "0") long id){
         var payment = paymentService.getPayment(id);
         return ResponseEntity.ok(payment);
     }
@@ -90,7 +90,7 @@ public class PaymentController {
      * */
     @PutMapping("/paid")
     public ResponseEntity<?> updatePaidPayment(final Authentication auth,
-                                               @RequestParam long id,
+                                               @RequestParam(defaultValue = "0") long id,
                                                @RequestParam LocalDateTime date){
         var payment = paymentService.updatePaidRecord(auth, id, date);
         return ResponseEntity.ok(payment);
@@ -104,7 +104,7 @@ public class PaymentController {
      * */
     @PutMapping("/unpaid")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateUnpaidPayment(@RequestParam long id){
+    public ResponseEntity<?> updateUnpaidPayment(@RequestParam(defaultValue = "0") long id){
         var payment = paymentService.updateNonPaidRecord(id);
         return ResponseEntity.ok(payment);
     }
@@ -115,7 +115,7 @@ public class PaymentController {
      * */
     @DeleteMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> deletePayment(@RequestParam long id){
+    public ResponseEntity<?> deletePayment(@RequestParam(defaultValue = "0") long id){
         paymentService.deletePayment(id);
         return ResponseEntity.noContent().build();
     }

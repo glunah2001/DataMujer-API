@@ -56,7 +56,7 @@ public class AuthController {
      * @return un estado 200 OK.
      * */
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody final String email){
+    public ResponseEntity<?> forgotPassword(@RequestParam final String email){
         passwordResetService.forgotPassword(email);
         return ResponseEntity.ok("Si el correo se encuentra registrado, se ha enviado un correo de " +
                 "recuperación de contraseña.");

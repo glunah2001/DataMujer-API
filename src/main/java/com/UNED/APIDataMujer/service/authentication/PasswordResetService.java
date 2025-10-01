@@ -2,6 +2,7 @@ package com.UNED.APIDataMujer.service.authentication;
 
 import com.UNED.APIDataMujer.dto.authentication.ResetPasswordDTO;
 import com.UNED.APIDataMujer.enums.TokenType;
+import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.InvalidTokenException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.TokenRepository;
@@ -39,6 +40,9 @@ public class PasswordResetService {
      * @throws UsernameNotFoundException en caso de que el email no se encuentre registrado
      * */
     public void forgotPassword(final String email){
+        if(email == null)
+            throw new BusinessValidationException("Usted no está proporcionando un email válido.");
+
         final var user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("No se ha encontrado ningún usuario registrado con el " +

@@ -34,7 +34,7 @@ public class VolunteeringController {
      * */
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getVolunteering(@RequestParam long id){
+    public ResponseEntity<?> getVolunteering(@RequestParam(defaultValue = "0") long id){
         var volunteering = volunteeringService.getVolunteering(id);
         return ResponseEntity.ok(volunteering);
     }
@@ -63,7 +63,7 @@ public class VolunteeringController {
      * */
     @GetMapping("volunteersInActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getVolunteeringForAnActivity(@RequestParam long activityId,
+    public ResponseEntity<?> getVolunteeringForAnActivity(@RequestParam(defaultValue = "0") long activityId,
                                                           @RequestParam(defaultValue = "0") int page){
         var volunteering = volunteeringService.getVolunteeringForAnActivity(activityId, page);
         return ResponseEntity.ok(volunteering);
@@ -113,9 +113,9 @@ public class VolunteeringController {
      * @param dto nuevos datos del voluntariado.
      * @return Dto. Con los datos del voluntariado actualizado.
      * */
-    @PutMapping("/{id}")
+    @PutMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> updateVolunteering(@PathVariable long id,
+    public ResponseEntity<?> updateVolunteering(@RequestParam(defaultValue = "0") long id,
                                                 @Valid @RequestBody VolunteeringUpdateDTO dto){
         var volunteering = volunteeringService.updateVolunteering(id, dto);
         return ResponseEntity.ok(volunteering);
@@ -127,9 +127,9 @@ public class VolunteeringController {
      * @param auth credenciales del usuario.
      * @return código 204. Éxito sin contenido que retornar.
      * */
-    @DeleteMapping("/{id}")
+    @DeleteMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> deleteVolunteering(@PathVariable long id,
+    public ResponseEntity<?> deleteVolunteering(@RequestParam(defaultValue = "0") long id,
                                                 final Authentication auth){
         volunteeringService.deleteVolunteering(id, auth);
         return ResponseEntity.noContent().build();

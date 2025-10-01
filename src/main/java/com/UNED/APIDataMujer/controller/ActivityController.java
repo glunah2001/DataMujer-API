@@ -49,8 +49,8 @@ public class ActivityController {
      * @param id id de la actividad.
      * @return actividad concreta recuperada de la bd.
      * */
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getActivity(@PathVariable long id){
+    @GetMapping
+    public ResponseEntity<?> getActivity(@RequestParam(defaultValue = "0") long id){
         var activity = activityService.getActivityDto(id);
         return ResponseEntity.ok(activity);
     }
@@ -61,7 +61,7 @@ public class ActivityController {
      * @param page indicador de paginación.
      * @return página de 25 actividades en DTO.
      * */
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllActiveActivities(@RequestParam(defaultValue = "0") int page){
         var activities = activityService.getAllActiveActivities(page);
         return ResponseEntity.ok(activities);
@@ -73,9 +73,9 @@ public class ActivityController {
      * @param auth credenciales del usuario mentor/administrador.
      * @return se espera un código 204 (Éxito pero sin contenido que retornar)
      * */
-    @DeleteMapping("/{id}")
+    @DeleteMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> deleteActivity(@PathVariable long id,
+    public ResponseEntity<?> deleteActivity(@RequestParam(defaultValue = "0") long id,
                                             final Authentication auth){
         activityService.deleteActivity(id, auth);
         return ResponseEntity.noContent().build();
