@@ -28,6 +28,7 @@ public class ParticipationController {
      * @return información de la participación en DTO.
      * */
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> getParticipation(@RequestParam(defaultValue = "0") long id){
         var participation = participationService.getParticipation(id);
         return ResponseEntity.ok(participation);

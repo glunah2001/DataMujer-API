@@ -31,6 +31,7 @@ public class PaymentController {
      * @return dto. Con información del pago.
      * */
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> getPayment(@RequestParam(defaultValue = "0") long id){
         var payment = paymentService.getPayment(id);
         return ResponseEntity.ok(payment);
@@ -43,6 +44,7 @@ public class PaymentController {
      * @return resultado de búsqueda con dto. Con información del pago.
      * */
     @GetMapping("/status")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> getPaymentsByStatus(@RequestParam(defaultValue = "true") boolean isPaid,
                                                        @RequestParam(defaultValue = "0") int page){
         var payments = paymentService.getPaymentsByStatus(isPaid, page);

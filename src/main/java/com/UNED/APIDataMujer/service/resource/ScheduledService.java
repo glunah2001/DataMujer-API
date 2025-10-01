@@ -34,7 +34,7 @@ public class ScheduledService {
     private final PaymentRepository paymentRepository;
 
     /**
-     * TODOS LOS DÍAS A LAS 23:50 (11:50 PM) revisará las actividades
+     * TODOS LOS DÍAS A LAS 23:50 (11:50 PM) revisará las actividades.
      * cuya fecha de cierre haya pasado e irá clausurando sus participaciones como
      * COMPLETAS en caso de que la persona haya indicado el inicio de su participación o
      * CANCELADA en caso contrario para finalmente actualizar los cambios en la BD.
@@ -67,6 +67,7 @@ public class ScheduledService {
     }
 
     /**
+     * TODOS LOS DÍAS A LAS 00:00 (12:00 AM) revisará los usuarioS.
      * Función que revisa al inicio del día si la persona tiene un pago MENSUALIDAD del mes actual
      * para actualizar su estado.
      * */
