@@ -9,7 +9,6 @@ import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +52,7 @@ public class UserServiceImpl implements UserService{
      * @param username nombre del usuario al cual aplicar el cambio.
      * @param role rol a asignar.
      * @return mensaje de confirmación.
-     * @throws BusinessValidationException en caso que el usuario a modificar sea el administrador
+     * @throws BusinessValidationException en caso de que el usuario a modificar sea el administrador
      * que ejecuta la operación.
      * */
     @Override
