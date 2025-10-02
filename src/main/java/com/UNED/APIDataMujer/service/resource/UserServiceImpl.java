@@ -3,6 +3,8 @@ package com.UNED.APIDataMujer.service.resource;
 import com.UNED.APIDataMujer.dto.request.CommonUpdateDTO;
 import com.UNED.APIDataMujer.dto.response.ProfileDTO;
 import com.UNED.APIDataMujer.entity.User;
+import com.UNED.APIDataMujer.enums.Role;
+import com.UNED.APIDataMujer.exception.BusinessValidationException;
 import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class UserServiceImpl implements UserService{
 
     private final PhysicalPersonService physicalPersonService;
     private final LegalPersonService legalPersonService;
+    private final TokenService tokenService;
     private final UserRepository userRepository;
 
     /**
@@ -40,6 +43,63 @@ public class UserServiceImpl implements UserService{
     public ProfileDTO getPersonByUsername(String username) {
         var user = getUserByUsername(username);
         return mapUserToProfileDTO(user);
+    }
+
+    /**
+     * Función para cambiar el rol de una persona diferente al administrador que ejecuta la
+     * actualización. Al ejecutar esta función todos los tokens de la persona son revocados e
+     * invalidados.
+     * @param auth credenciales.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @param role rol a asignar.
+     * @return mensaje de confirmación.
+     * @throws BusinessValidationException en caso que el usuario a modificar sea el administrador
+     * que ejecuta la operación.
+     * */
+    @Override
+    @Transactional
+    public String setRole(final Authentication auth,
+                          String username, int role) {
+        var user = getUserByUsername(username);
+        final var myUsar = getMyUser(auth);
+
+        if(user.equals(myUsar))
+            throw new BusinessValidationException("Usted no puede modificar su propio " +
+                    "rol.");
+
+        user.setRole(
+                switch(role){
+                    case 1: yield Role.ROLE_MENTOR;
+                    case 2: yield Role.ROLE_ADMIN;
+                    default: yield  Role.ROLE_STANDARD;
+                }
+        );
+
+        userRepository.save(user);
+        tokenService.revokeAllActiveTokens(user);
+
+        return "Rol del usuario "+username+": " +
+                (role == 1 ? "MENTOR" :
+                        role == 2 ? "ADMIN" : "STANDARD");
+    }
+
+    /**
+     * Función para cambiar el estado de afiliación de una persona.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @return mensaje de confirmación.
+     * */
+    @Override
+    @Transactional
+    public String setAffiliate(String username) {
+        var user = getUserByUsername(username);
+        var affiliate = !user.isAffiliate();
+
+        user.setAffiliate(affiliate);
+
+        userRepository.save(user);
+
+        return "Estado de afiliación del usuario "+username+": " +
+                (affiliate ? "afiliado": "sin afiliar");
     }
 
     /**

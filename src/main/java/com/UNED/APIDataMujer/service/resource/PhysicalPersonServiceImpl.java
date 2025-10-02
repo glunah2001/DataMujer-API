@@ -36,7 +36,7 @@ public class PhysicalPersonServiceImpl implements PhysicalPersonService{
     public PhysicalPersonDTO getPersonByNationalId(String nationalId) {
         var pp = physicalPersonRepository.findByNationalId(nationalId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("La persona con cédula legal: "+nationalId+
+                        new ResourceNotFoundException("La persona con cédula nacional: "+nationalId+
                                 "no se encuentra registrada.")
                 );
 

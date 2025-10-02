@@ -12,4 +12,6 @@ public interface UserService {
     User getUserByUsername(String username);
     ProfileDTO getMyProfile(Authentication authentication);
     ProfileDTO getPersonByUsername(String username);
+    String setRole(Authentication auth, String username, int role);
+    String setAffiliate(String username);
 }

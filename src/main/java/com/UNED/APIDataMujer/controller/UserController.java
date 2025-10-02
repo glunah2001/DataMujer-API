@@ -8,6 +8,7 @@ import com.UNED.APIDataMujer.service.resource.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,6 +69,36 @@ public class UserController {
         final var user = userService.updateUserData(auth, updateDto.commonUpdateDTO());
         var dto = legalPersonService.updateMyLegalProfile(user, updateDto);
         return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Endpoint para permitir a los usuarios administradores alterar los roles de una persona.
+     * Preferiblemente que no se trate del administrador que aplica la operación.
+     * @param auth credenciales.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @param role rol a asignar.
+     * @return mensaje de confirmación con el cambio. Código 200.
+     * */
+    @PutMapping("/set/Role")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateRole(final Authentication auth,
+                                        @RequestParam String username,
+                                        @RequestParam(defaultValue = "0") int role){
+        var message = userService.setRole(auth, username, role);
+        return ResponseEntity.ok("Actualización realizada - "+message);
+    }
+
+    /**
+     * Endpoint para permitir a los usuarios administradores alterar el estado
+     * Afiliado/Sin Afiliar de una persona.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @return mensaje de confirmación con el cambio. Código 200.
+     * */
+    @PutMapping("/set/Affiliate")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateRole(@RequestParam String username){
+        var message = userService.setAffiliate(username);
+        return ResponseEntity.ok("Actualización realizada - "+message);
     }
 
     /**
