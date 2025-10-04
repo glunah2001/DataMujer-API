@@ -61,7 +61,7 @@ public class VolunteeringController {
      * @param page indicador de paginación.
      * @return listado de los voluntariados de dicha actividad.
      * */
-    @GetMapping("volunteersInActivity")
+    @GetMapping("InActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> getVolunteeringForAnActivity(@RequestParam(defaultValue = "0") long activityId,
                                                           @RequestParam(defaultValue = "0") int page){

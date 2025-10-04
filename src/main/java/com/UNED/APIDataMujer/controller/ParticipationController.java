@@ -40,7 +40,7 @@ public class ParticipationController {
      * @param id identificador de la actividad.
      * @param page pagina.
      * */
-    @GetMapping("/activity")
+    @GetMapping("/InActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> getActivityParticipation(final Authentication auth,
                                                       @RequestParam(defaultValue = "0") long id,
