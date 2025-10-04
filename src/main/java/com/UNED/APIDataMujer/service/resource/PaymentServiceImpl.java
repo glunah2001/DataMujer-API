@@ -2,6 +2,7 @@ package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
 import com.UNED.APIDataMujer.dto.request.PaymentRegisterDTO;
+import com.UNED.APIDataMujer.dto.response.AffiliatesPaymentReportDTO;
 import com.UNED.APIDataMujer.dto.response.PaymentDTO;
 import com.UNED.APIDataMujer.entity.Payment;
 import com.UNED.APIDataMujer.entity.User;
@@ -21,9 +22,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Clase encargada a los servicios relacionados con los pagos.
@@ -85,6 +86,33 @@ public class PaymentServiceImpl implements PaymentService{
     }
 
     /**
+     * Función encargada de consultar la información de todos los usuarios que han
+     * pagado al menos una mensualidad.
+     * @param page número de página.
+     * @return una página con los resultados.
+     * */
+    @Override
+    public SimplePage<AffiliatesPaymentReportDTO> generateUserPaymentReport(int page) {
+
+        Pageable pageable = PageRequest.of(page, 25); // 25 por página
+        var users = paymentRepository
+                .findUsersWithPaidMonthlyPaymentsPaged(Classification.MENSUALIDAD, pageable);
+
+        return PaginationUtil.wrapInPage(users, user -> {
+            var lastPaymentOpt = paymentRepository
+                    .findTopByUserAndClassificationAndIsPaidTrueOrderByPaymentDateDesc(
+                            user, Classification.MENSUALIDAD);
+
+            LocalDateTime lastPaymentDate = lastPaymentOpt.map(Payment::getPaymentDate).orElse(null);
+
+            BigDecimal totalPaid = paymentRepository
+                    .sumPaidMonthlyByUser(user, Classification.MENSUALIDAD);
+
+            return paymentMapper.toDto(user, lastPaymentDate, totalPaid);
+        });
+    }
+
+    /**
      * Función para crear un nuevo pago.
      * @param auth credenciales.
      * @param dto información del pago.
@@ -108,7 +136,7 @@ public class PaymentServiceImpl implements PaymentService{
         var payment = paymentMapper.toEntity(user, dto);
         var myPayment = paymentRepository.save(payment);
 
-        updateAffiliateStatus(user);
+        updateAffiliateAndContributorStatus(user);
 
         return paymentMapper.toDto(myPayment);
     }
@@ -128,17 +156,16 @@ public class PaymentServiceImpl implements PaymentService{
                                        long id, LocalDateTime paymentDate) {
 
         var payment = getPaymentById(id);
-
         final var user = userService.getMyUser(auth);
-
-        if(payment.isPaid())
-            throw new BusinessValidationException("Este pago cuenta ya con una fecha de transacción y un estado " +
-                    "afirmativo.");
 
         if(user.getRole() != Role.ROLE_ADMIN &&
                 !user.equals(payment.getUser()))
             throw new BusinessValidationException("Usted está intentando actualizar un pago " +
                     "que no le corresponde.");
+
+        if(payment.isPaid())
+            throw new BusinessValidationException("Este pago cuenta ya con una fecha de transacción y un estado " +
+                    "afirmativo.");
 
         if(paymentDate.isAfter(LocalDateTime.now()))
             throw new BusinessValidationException("La fecha que reporta es inválida.");
@@ -147,7 +174,7 @@ public class PaymentServiceImpl implements PaymentService{
         payment.setPaid(true);
 
         var myPayment = paymentRepository.save(payment);
-        updateAffiliateStatus(user);
+        updateAffiliateAndContributorStatus(user);
 
         return paymentMapper.toDto(myPayment);
     }
@@ -171,41 +198,48 @@ public class PaymentServiceImpl implements PaymentService{
         payment.setPaid(false);
 
         var myPayment = paymentRepository.save(payment);
+        updateAffiliateAndContributorStatus(myPayment.getUser());
 
         return paymentMapper.toDto(myPayment);
     }
 
     /**
-     * Función encargada de revisar y actualizar el estado de un usuario (Estudiante-Colaborador) dependiendo
-     * de si ha hecho un pago de tipo MENSUALIDAD correspondiente al mes actual.
-     * @param user usuario a actualizar/consultar.
+     * Función que actualiza los estados "Contribuidor" y "Afiliado" a true de
+     * un usuario.
+     * @param user usuario a actualizar.
      * */
     @Override
     @Transactional
-    public void updateAffiliateStatus(User user) {
-        String currentMonthYear = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        boolean hasMonthlyPayment = paymentRepository
-                .existsByUserAndClassificationAndIsPaidAndPaymentMonthYear(
-                        user,
-                        Classification.MENSUALIDAD,
-                        true,
-                        currentMonthYear
+    public void updateAffiliateAndContributorStatus(User user){
+        var hasContributions = paymentRepository.existsByUserAndIsPaidTrue(user);
+        user.setContributor(hasContributions);
+
+        var lastMonthlyPayment = paymentRepository
+                .findTopByUserAndClassificationAndIsPaidTrueOrderByPaymentDateDesc(
+                        user, Classification.MENSUALIDAD
                 );
 
-        if (hasMonthlyPayment && !user.isContributor()) {
-            user.setContributor(true);
-            userRepository.save(user);
-        } else if (!hasMonthlyPayment && user.isContributor()) {
-            user.setContributor(false);
-            userRepository.save(user);
+        if (lastMonthlyPayment.isPresent()) {
+            var paymentDate = lastMonthlyPayment.get().getPaymentDate();
+            var expirationDate = paymentDate.plusMonths(1);
+
+            user.setAffiliate(
+                    expirationDate.isAfter(LocalDateTime.now())
+            );
+        } else {
+            user.setAffiliate(false);
         }
+        userRepository.save(user);
     }
+
+
 
     /**
      * Función encargada de eliminar un payment de la base de datos.
      * @param id identificador del pago.
      * */
     @Override
+    @Transactional
     public void deletePayment(long id) {
         var payment = getPaymentById(id);
         paymentRepository.delete(payment);
