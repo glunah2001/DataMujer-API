@@ -1,11 +1,15 @@
 package com.UNED.APIDataMujer.mapper;
 
 import com.UNED.APIDataMujer.dto.request.PaymentRegisterDTO;
+import com.UNED.APIDataMujer.dto.response.AffiliatesPaymentReportDTO;
 import com.UNED.APIDataMujer.dto.response.PaymentDTO;
 import com.UNED.APIDataMujer.entity.Payment;
 import com.UNED.APIDataMujer.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +21,6 @@ public class PaymentMapper {
                 .description(dto.description())
                 .classification(dto.classification())
                 .method(dto.method())
-                .paymentMonthYear(dto.monthYearPayment())
                 .paymentDate(dto.paymentDate())
                 .isPaid(dto.isPaid())
                 .totalAmount(dto.totalAmount())
@@ -31,11 +34,21 @@ public class PaymentMapper {
                 payment.getDescription(),
                 payment.getClassification(),
                 payment.getMethod(),
-                payment.getPaymentMonthYear(),
                 payment.getPaymentDate(),
                 payment.isPaid(),
                 payment.getTotalAmount()
                 );
+    }
+
+    public AffiliatesPaymentReportDTO toDto(User user, LocalDateTime lastPaymentDate,
+                                            BigDecimal totalPaid){
+        return new AffiliatesPaymentReportDTO(
+                user.getUsername(),
+                lastPaymentDate,
+                lastPaymentDate.plusMonths(1),
+                totalPaid,
+                user.isAffiliate()
+        );
     }
 
 }

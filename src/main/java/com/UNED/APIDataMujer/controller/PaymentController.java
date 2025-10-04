@@ -65,6 +65,18 @@ public class PaymentController {
     }
 
     /**
+     * Endpoint para consultar información de usuarios afiliados.
+     * @param page pagina.
+     * @return paginación de usuarios afiliados.
+     * */
+    @GetMapping("/affiliates-report")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> getAffiliatesReport(@RequestParam(defaultValue = "0") int page){
+        var report = paymentService.generateUserPaymentReport(page);
+        return ResponseEntity.ok(report);
+    }
+
+    /**
      * Endpoint para reportar un nuevo pago.
      * @param auth credenciales.
      * @param dto Dto. Con información del pago realizado.

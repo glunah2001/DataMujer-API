@@ -4,6 +4,7 @@ import com.UNED.APIDataMujer.enums.Classification;
 import com.UNED.APIDataMujer.enums.Method;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record PaymentDTO(
@@ -12,7 +13,6 @@ public record PaymentDTO(
         String description,
         Classification classification,
         Method method,
-        String monthYearPayment,
         LocalDateTime paymentDate,
         Boolean isPaid,
         BigDecimal totalAmount
