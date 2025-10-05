@@ -9,9 +9,19 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
+/**
+ * Clase encargada del mapeo de participaciones.
+ * @author glunah2001
+ * */
 @Component
 public class ParticipationMapper {
 
+    /**
+     * Mapeo de una entidad con base en información proporcionada.
+     * @param user usuario encargado de la participación.
+     * @param activity actividad en la que participa.
+     * @return entidad creada de tipo Participation.
+     * */
     public Participation toEntity(User user, Activity activity){
         return Participation.builder()
                 .activity(activity)
@@ -21,6 +31,11 @@ public class ParticipationMapper {
                 .build();
     }
 
+    /**
+     * Mapeo de una entidad participación a un dto.
+     * @param participation entidad participation recuperada de la base de datos.
+     * @return dto. Con la información de la participación.
+     * */
     public ParticipationDTO toDto(Participation participation){
         return new ParticipationDTO(
                 participation.getId(),
