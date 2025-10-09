@@ -68,7 +68,7 @@ public class ScheduledService {
      * TODOS LOS DÍAS A LAS 00:10 (12:10 AM) revisará a todos los usuarios afiliados.
      * Comprobará si su afiliación no ha caducados para actualizarla.
      * */
-    @Scheduled(cron = "0 10 0 * *")
+    @Scheduled(cron = "0 10 0 * * ?")
     @Transactional
     public void scheduledUserUpdateAffiliateStatus(){
         List<User> users = userRepository.findByIsAffiliateTrue();

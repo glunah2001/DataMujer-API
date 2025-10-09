@@ -8,6 +8,9 @@ import com.UNED.APIDataMujer.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 
 /**
  * Mapper de entidad Payment de entidad a DTO y viceversa.
