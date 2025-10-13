@@ -69,7 +69,7 @@ public class ActivationService {
         final String activationToken = tokenService.generateToken(expiration);
         tokenService.saveToken(activationToken, user, TokenType.ACTIVATION);
 
-        String activationLink = "https://localhost:8443/activate?token=" + activationToken;
+        String activationLink = "http://localhost:8080/activate?token=" + activationToken;
 
         String body = String.format("Nos alegra mucho que te unas a Data Mujer. Por favor, " +
                 "activa tu cuenta desde <a href=%s>este link</a>.", activationLink);
