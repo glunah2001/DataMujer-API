@@ -82,14 +82,22 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     /**
      * Función de interfaz. Esta función se encarga de obtener todos los voluntariados
      * de una actividad.
-     * @param id id de la actividad a buscar.
+     * @param activityId id de la actividad a buscar.
      * @return lista de voluntariados con detalles de la actividad.
      * */
     @Override
-    public SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id, int page) {
+    public SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(final Authentication auth,
+                                                                    long activityId,
+                                                                    int page) {
+        var user = userService.getMyUser(auth);
+
+        if(!isUserOrganizer(activityId, user.getId()) && user.getRole() != Role.ROLE_ADMIN)
+            throw new BusinessValidationException("La actividad "+activityId+" y sus voluntariados no " +
+                    "pueden ser consultadas por su persona");
+
         Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
         Page<Volunteering> volunteering =
-                volunteeringRepository.findByActivityId(id, pageable);
+                volunteeringRepository.findByActivityId(activityId, pageable);
         return PaginationUtil.wrapInPage(volunteering, volunteeringMapper::toDto);
     }
 
@@ -199,9 +207,12 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                 );
         var activity = volunteering.getActivity();
 
+        if(activity.isFinalized())
+            throw new BusinessValidationException("La actividad asociada a este voluntariado a concluido");
+
         if(volunteering.isMainOrganizer())
             throw new BusinessValidationException("Dado que este voluntariado está marcado como " +
-                    "\"voluntariado de organizador principal\" no es posible eliminarlo.");
+                    "\"voluntariado de organizador principal\" no es posible actualizarlo.");
 
         final var user = volunteering.getUser();
 

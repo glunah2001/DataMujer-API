@@ -17,4 +17,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
                                                                             ParticipationState excludedState,
                                                                             Pageable pageable);
     List<Participation> findByActivityIdAndStatusIn(Long activityId, List<ParticipationState> statuses);
+    boolean existsByUserIdAndActivityIdAndStatusNot(Long userId,
+                                                    Long activityId,
+                                                    ParticipationState excludedState);
 }

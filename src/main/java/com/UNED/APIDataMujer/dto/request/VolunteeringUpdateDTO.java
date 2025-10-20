@@ -14,6 +14,6 @@ public record VolunteeringUpdateDTO(
         @Future(message = "El voluntariado debe notificarse con un margen de tiempo de 1 día mínimo")
         LocalDateTime endShift,
         @NotNull(message = "EL dato \"Rol en Actividad\" es obligatorio")
-        @Size(max = 15, message = "Describa el rol en 15 o menos caracteres")
+        @Size(max = 35, message = "Describa el rol en 35 o menos caracteres")
         String activityRole
 ) { }

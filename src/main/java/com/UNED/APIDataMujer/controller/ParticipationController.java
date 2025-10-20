@@ -37,15 +37,15 @@ public class ParticipationController {
     /**
      * Endpoint para consultar todas las participaciones de una actividad sin importar su estado.
      * @param auth credenciales.
-     * @param id identificador de la actividad.
+     * @param activityId identificador de la actividad.
      * @param page pagina.
      * */
     @GetMapping("/InActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
     public ResponseEntity<?> getActivityParticipation(final Authentication auth,
-                                                      @RequestParam(defaultValue = "0") long id,
+                                                      @RequestParam(defaultValue = "0") long activityId,
                                                       @RequestParam(defaultValue = "0") int page){
-        var participation = participationService.getActivityParticipation(auth, id, page);
+        var participation = participationService.getActivityParticipation(auth, activityId, page);
         return ResponseEntity.ok(participation);
     }
 

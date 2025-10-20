@@ -53,6 +53,10 @@ public class ParticipationServiceImpl implements ParticipationService{
                                                                  int page) {
 
         final var user = userService.getMyUser(auth);
+
+        if(!activityRepository.existsById(activityId))
+            throw new ResourceNotFoundException("La actividad "+activityId+" no existe");
+
         if(!volunteeringService.isUserOrganizer(activityId, user.getId()) &&
                 user.getRole() != Role.ROLE_ADMIN)
             throw new BusinessValidationException("La actividad "+activityId+" y sus participaciones no " +
@@ -108,6 +112,11 @@ public class ParticipationServiceImpl implements ParticipationService{
             throw new BusinessValidationException("La actividad "+activityId+" ya ha dado inicio, por lo que su " +
                     "registro para participación no se puede lleva a cabo.");
 
+        if(participationRepository.existsByUserIdAndActivityIdAndStatusNot(user.getId(),
+                activityId,
+                ParticipationState.CANCELADO))
+            throw new BusinessValidationException("Usted ya cuenta con una participación en la actividad "+activityId);
+
         var participation = participationMapper.toEntity(user, activity);
         var myParticipation = participationRepository.save(participation);
 
@@ -129,6 +138,10 @@ public class ParticipationServiceImpl implements ParticipationService{
         final var user = userService.getMyUser(auth);
 
         validateParticipation(participation, user);
+
+        if(LocalDate.now().isBefore(participation.getActivity().getStartDate().toLocalDate()))
+            throw new BusinessValidationException("La participación "+participation.getId() +" no puede dar " +
+                    "inicio antes de la fecha de apertura de la actividad.");
 
         participation.setStartDate(LocalDate.now());
         participation.setStatus(ParticipationState.AVANZANDO);

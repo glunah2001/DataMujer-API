@@ -33,7 +33,7 @@ public class VolunteeringController {
      * @return Dto. Del voluntariado buscado.
      * */
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> getVolunteering(@RequestParam(defaultValue = "0") long id){
         var volunteering = volunteeringService.getVolunteering(id);
         return ResponseEntity.ok(volunteering);
@@ -48,7 +48,7 @@ public class VolunteeringController {
      * */
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getMyPending(Authentication auth,
+    public ResponseEntity<?> getMyPending(final Authentication auth,
                                           @RequestParam(defaultValue = "0") int page){
         var volunteering = volunteeringService.getMyPendingVolunteering(auth, page);
         return ResponseEntity.ok(volunteering);
@@ -57,15 +57,17 @@ public class VolunteeringController {
     /**
      * Función encargada de atender las solicitudes que buscan obtener todos
      * los voluntariados en una actividad en concreto.
+     * @param auth credenciales
      * @param activityId activityId de la actividad.
      * @param page indicador de paginación.
      * @return listado de los voluntariados de dicha actividad.
      * */
     @GetMapping("InActivity")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> getVolunteeringForAnActivity(@RequestParam(defaultValue = "0") long activityId,
+    public ResponseEntity<?> getVolunteeringForAnActivity(final Authentication auth,
+                                                          @RequestParam(defaultValue = "0") long activityId,
                                                           @RequestParam(defaultValue = "0") int page){
-        var volunteering = volunteeringService.getVolunteeringForAnActivity(activityId, page);
+        var volunteering = volunteeringService.getVolunteeringForAnActivity(auth, activityId, page);
         return ResponseEntity.ok(volunteering);
     }
 

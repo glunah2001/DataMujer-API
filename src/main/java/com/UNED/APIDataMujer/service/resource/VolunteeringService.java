@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 public interface VolunteeringService {
     VolunteeringDTO getVolunteering(long id);
     SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth, int page);
-    SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(long id, int page);
+    SimplePage<VolunteeringDTO> getVolunteeringForAnActivity(final Authentication auth,
+                                                             long activityId,
+                                                             int page);
     void createOrganizerVolunteering(String username,
                                      Activity activity,
                                      LocalDateTime startDate,
