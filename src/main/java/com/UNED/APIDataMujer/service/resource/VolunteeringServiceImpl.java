@@ -350,10 +350,10 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                     "está fuera del rango de la actividad.");
 
         var shiftLength = ChronoUnit.HOURS.between(startShift, endShift);
-        if(shiftLength < 1 || shiftLength > 8)
+        if(shiftLength < 1 || shiftLength > 12)
             throw new BusinessValidationException("La operación de voluntariado del usuario "
                     + username + " no se puede llevar a cabo porque los turnos deben abarcar " +
-                    "de 1 hora mínimo a 8 horas máximo.");
+                    "de 1 hora mínimo a 12 horas máximo.");
 
         var organizerId = volunteeringRepository.findOrganizerIdByActivityId(activity.getId())
                 .orElseThrow(() ->
@@ -363,7 +363,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var sameOrganizerConflict = volunteeringRepository.existsConflictWithSameOrganizer(
                 userId, organizerId, activity.getId(), startShift, endShift);
 
-        if(sameOrganizerConflict)
+        if(sameOrganizerConflict && !isUserOrganizer(activity.getId(), userId))
             throw new BusinessValidationException("La operación de voluntariado del usuario "
                     + username + " no se puede llevar a cabo porque no puede participar en " +
                     "dos actividades del mismo organizador que se lleguen a solapar.");
