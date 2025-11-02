@@ -1,6 +1,8 @@
 package com.UNED.APIDataMujer.controller;
 
+import com.UNED.APIDataMujer.dto.request.ParticipationWrapperDTO;
 import com.UNED.APIDataMujer.service.resource.ParticipationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -71,7 +73,7 @@ public class ParticipationController {
     @PostMapping
     public ResponseEntity<?> createParticipation(final Authentication auth,
                                                  @RequestParam(defaultValue = "0") long activityId){
-        var participation = participationService.createParticipation(auth, activityId);
+        var participation = participationService.createMyParticipation(auth, activityId);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/participation")
@@ -79,6 +81,25 @@ public class ParticipationController {
                 .build()
                 .toUri();
         return ResponseEntity.created(location).body(participation);
+    }
+
+    /**
+     * Endpoint para la inserción de multiples participaciones en una actividad.
+     * @param dto con información a insertar.
+     * @return código 201.
+     * */
+    @PostMapping("/multiple")
+    @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<?> postMultipleParticipation(final Authentication auth, @Valid @RequestBody ParticipationWrapperDTO dto){
+        var activityId = participationService.createParticipations(auth, dto);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/participation/InActivity")
+                .queryParam("activityId", activityId)
+                .build()
+                .toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     /**

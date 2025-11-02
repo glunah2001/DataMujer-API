@@ -141,12 +141,18 @@ public class VolunteeringServiceImpl implements VolunteeringService{
      * */
     @Override
     @Transactional
-    public long createVolunteering(VolunteeringWrapperDTO dto) {
+    public long createVolunteering(final Authentication auth, VolunteeringWrapperDTO dto) {
+        var user = userService.getMyUser(auth);
+        var activityId = dto.activityId();
+        if(user.getRole() != Role.ROLE_ADMIN && isUserOrganizer(activityId, user.getId()))
+            throw new BusinessValidationException("Esta operación no puede ser realizada por su persona " +
+                    "por falta de rol o estado ORGANIZADOR PRINCIPAL.");
+
         var list = dto.volunteering();
         if(list.isEmpty())
             throw new BusinessValidationException("El lote voluntariados está vacío.");
 
-        var activityId = dto.activityId();
+
         if(!sameActivityVolunteering(activityId, list))
             throw new BusinessValidationException("Existe una inconsistencia en el lote voluntariados: " +
                     "No todos los voluntariados están dirigidos a la misma actividad");
@@ -169,6 +175,34 @@ public class VolunteeringServiceImpl implements VolunteeringService{
         var user = userService.getMyUser(auth);
         var volunteering = new VolunteeringRegisterDTO(dto, user.getUsername());
         return createVolunteering(volunteering);
+    }
+
+    /**
+     * Función de interfaz. Función encargada de insertar en la base de datos el voluntariado
+     * de un usuario.
+     * @param dto Dto. Con información del voluntariado.
+     * @return Dto. Del voluntariado insertado.
+     * @throws BusinessValidationException en caso de que una regla de negocio sea violada.
+     * @throws ResourceNotFoundException en caso de que no se encuentre el voluntariado del organizador.
+     * */
+    @Transactional
+    private VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
+        var volunteeringData = dto.volunteeringData();
+
+        final var activity = getActivity(volunteeringData.activityId());
+        var username = dto.username();
+        final var user = userService.getUserByUsername(username);
+
+
+        validateVolunteering(activity,
+                dto.volunteeringData().startShift(),
+                dto.volunteeringData().endShift(),
+                user.getId(),
+                user.getUsername());
+
+        var volunteering = volunteeringMapper.toEntity(user, activity, dto);
+        var myVolunteering = volunteeringRepository.save(volunteering);
+        return volunteeringMapper.toDto(myVolunteering);
     }
 
     /**
@@ -265,35 +299,6 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                     "que no le pertenece.");
 
         volunteeringRepository.delete(volunteering);
-    }
-
-
-    /**
-     * Función de interfaz. Función encargada de insertar en la base de datos el voluntariado
-     * de un usuario.
-     * @param dto Dto. Con información del voluntariado.
-     * @return Dto. Del voluntariado insertado.
-     * @throws BusinessValidationException en caso de que una regla de negocio sea violada.
-     * @throws ResourceNotFoundException en caso de que no se encuentre el voluntariado del organizador.
-     * */
-    @Transactional
-    private VolunteeringDTO createVolunteering(VolunteeringRegisterDTO dto) {
-        var volunteeringData = dto.volunteeringData();
-
-        final var activity = getActivity(volunteeringData.activityId());
-        var username = dto.username();
-        final var user = userService.getUserByUsername(username);
-
-
-        validateVolunteering(activity,
-                dto.volunteeringData().startShift(),
-                dto.volunteeringData().endShift(),
-                user.getId(),
-                user.getUsername());
-
-        var volunteering = volunteeringMapper.toEntity(user, activity, dto);
-        var myVolunteering = volunteeringRepository.save(volunteering);
-        return volunteeringMapper.toDto(myVolunteering);
     }
 
     /**

@@ -1,8 +1,8 @@
 package com.UNED.APIDataMujer.service.resource;
 
 import com.UNED.APIDataMujer.dto.SimplePage;
+import com.UNED.APIDataMujer.dto.request.ParticipationWrapperDTO;
 import com.UNED.APIDataMujer.dto.response.ParticipationDTO;
-import com.UNED.APIDataMujer.entity.Activity;
 import com.UNED.APIDataMujer.entity.Participation;
 import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.enums.ParticipationState;
@@ -99,8 +99,47 @@ public class ParticipationServiceImpl implements ParticipationService{
      * */
     @Override
     @Transactional
-    public ParticipationDTO createParticipation(final Authentication auth, long activityId) {
+    public ParticipationDTO createMyParticipation(final Authentication auth, long activityId) {
         final var user = userService.getMyUser(auth);
+        return createParticipation(activityId, user);
+    }
+
+    /**
+     * Función de interfaz que crea un listado de participaciones en la BD mediante un
+     * dto con la información correspondiente (id de la actividad y los usuarios participantes)
+     * @param dto DTO. Con la información.
+     * @return código de la actividad.
+     * */
+    @Override
+    @Transactional
+    public long createParticipations(Authentication auth, ParticipationWrapperDTO dto) {
+        var activityId = dto.activityId();
+        var user = userService.getMyUser(auth);
+
+        if(user.getRole() != Role.ROLE_ADMIN && !volunteeringService.isUserOrganizer(activityId, user.getId()))
+            throw new BusinessValidationException("Esta operación no puede ser realizada por su persona " +
+                    "por falta de rol o estado ORGANIZADOR PRINCIPAL.");
+
+
+        var usernames = dto.usernames();
+        if(usernames.isEmpty())
+            throw new BusinessValidationException("El lote de participaciones está vacio");
+
+        usernames.forEach(u ->{
+            var participant = userService.getUserByUsername(u);
+            createParticipation(activityId, participant);
+        });
+        return activityId;
+    }
+
+    /**
+     * Función auxiliar encargada de validar las participaciones antes de insertarlas.
+     * @param user usuario a insertar.
+     * @param activityId Id de actividad a insertar.
+     * @return DTO. Con información de la participación insertada.
+     * */
+    @Transactional
+    private ParticipationDTO createParticipation(long activityId, final User user){
         final var activity = activityRepository.findById(activityId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("La actividad "+activityId+" no fue encontrada para " +
@@ -109,13 +148,13 @@ public class ParticipationServiceImpl implements ParticipationService{
             throw new BusinessValidationException("La actividad "+activityId+" está actualmente clausurada.");
 
         if(activity.getStartDate().isBefore(LocalDateTime.now()))
-            throw new BusinessValidationException("La actividad "+activityId+" ya ha dado inicio, por lo que su " +
-                    "registro para participación no se puede lleva a cabo.");
+            throw new BusinessValidationException("La actividad "+activityId+" ya ha dado inicio, por lo que el " +
+                    "registro para participación de usuario "+user.getUsername()+" no se puede lleva a cabo.");
 
         if(participationRepository.existsByUserIdAndActivityIdAndStatusNot(user.getId(),
                 activityId,
                 ParticipationState.CANCELADO))
-            throw new BusinessValidationException("Usted ya cuenta con una participación en la actividad "+activityId);
+            throw new BusinessValidationException(user.getUsername()+" ya cuenta con una participación en la actividad "+activityId);
 
         var participation = participationMapper.toEntity(user, activity);
         var myParticipation = participationRepository.save(participation);

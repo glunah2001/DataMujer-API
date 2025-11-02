@@ -78,11 +78,12 @@ public class VolunteeringController {
      * */
     @PostMapping("/multiple")
     @PreAuthorize("hasAnyAuthority('ROLE_MENTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<?> postMultipleVolunteering(@Valid @RequestBody VolunteeringWrapperDTO dto){
-        var activityId = volunteeringService.createVolunteering(dto);
+    public ResponseEntity<?> postMultipleVolunteering(final Authentication auth,
+                                                      @Valid @RequestBody VolunteeringWrapperDTO dto){
+        var activityId = volunteeringService.createVolunteering(auth, dto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("/volunteering/volunteersInActivity")
+                .path("/volunteering/InActivity")
                 .queryParam("activityId", activityId)
                 .build()
                 .toUri();

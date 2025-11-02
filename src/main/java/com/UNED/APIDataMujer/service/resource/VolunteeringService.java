@@ -21,7 +21,7 @@ public interface VolunteeringService {
                                      Activity activity,
                                      LocalDateTime startDate,
                                      LocalDateTime endDate);
-    long createVolunteering(VolunteeringWrapperDTO dto);
+    long createVolunteering(Authentication auth, VolunteeringWrapperDTO dto);
     VolunteeringDTO createMyVolunteering(Authentication auth, BaseVolunteeringRegisterDTO dto);
     boolean isUserOrganizer(long activityId, long userId);
     VolunteeringDTO updateVolunteering(long volunteeringId, VolunteeringUpdateDTO dto);
