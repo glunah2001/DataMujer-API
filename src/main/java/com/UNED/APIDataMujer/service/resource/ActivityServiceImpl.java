@@ -94,7 +94,7 @@ public class ActivityServiceImpl implements ActivityService {
      * */
     @Override
     public SimplePage<ActivityDTO> getAllActiveActivities(int page) {
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("startDate").descending());
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("startDate").ascending());
         Page<Activity> activities = activityRepository.findByIsFinalizedFalse(pageable);
         return PaginationUtil.wrapInPage(activities, activityMapper::toDto);
     }

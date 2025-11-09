@@ -72,7 +72,7 @@ public class VolunteeringServiceImpl implements VolunteeringService{
     @Override
     public SimplePage<VolunteeringDTO> getMyPendingVolunteering(Authentication auth, int page) {
         final var user = userService.getMyUser(auth);
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("startShift").ascending());
         Page<Volunteering> volunteering =
                 volunteeringRepository.findByUserIdAndActivityIsFinalizedFalse(user.getId(), pageable);
 

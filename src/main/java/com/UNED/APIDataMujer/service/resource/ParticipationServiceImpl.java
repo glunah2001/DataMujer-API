@@ -62,7 +62,7 @@ public class ParticipationServiceImpl implements ParticipationService{
             throw new BusinessValidationException("La actividad "+activityId+" y sus participaciones no " +
                     "pueden ser consultadas por su persona");
 
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("registrationDate").ascending());
         var participation = participationRepository.findByActivityId(activityId, pageable);
         return PaginationUtil.wrapInPage(participation, participationMapper::toDto);
     }
@@ -79,7 +79,7 @@ public class ParticipationServiceImpl implements ParticipationService{
                                                             int page) {
         final var user = userService.getMyUser(auth);
 
-        Pageable pageable = PageRequest.of(page, 25, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, 25, Sort.by("registrationDate").ascending());
         Page<Participation> participation = participationRepository
                 .findByUserIdAndActivityIsFinalizedFalseAndStatusNot(user.getId(),
                         ParticipationState.CANCELADO,
