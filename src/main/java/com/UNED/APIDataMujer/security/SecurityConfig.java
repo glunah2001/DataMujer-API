@@ -84,8 +84,22 @@ public class SecurityConfig{
                         .addLogoutHandler((request,
                                            response,
                                            authentication) -> {
-                            final var authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-                            logout(authHeader);
+                            try{
+                                final var authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+                                logout(authHeader);
+                            }catch (IllegalArgumentException ex) {
+                                try{
+                                    handleError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, response);
+                                }catch (IOException ioEx) {
+                                    throw new RuntimeException(ioEx);
+                                }
+                            }catch (ResourceNotFoundException ex) {
+                                try{
+                                    handleError(HttpStatus.NOT_FOUND, ex.getMessage(), request, response);
+                                }catch (IOException ioEx) {
+                                    throw new RuntimeException(ioEx);
+                                }
+                            }
                         })
                         .logoutSuccessHandler((request,
                                                response,

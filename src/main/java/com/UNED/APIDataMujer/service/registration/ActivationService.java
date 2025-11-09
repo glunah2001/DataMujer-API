@@ -71,8 +71,10 @@ public class ActivationService {
 
         String activationLink = "http://localhost:8080/activate?token=" + activationToken;
 
-        String body = String.format("Nos alegra mucho que te unas a Data Mujer. Por favor, " +
-                "activa tu cuenta desde <a href=%s>este link</a>.", activationLink);
+        String body = String.format("""
+                Nos alegra mucho que te unas a Data Mujer.
+                Por favor, activa tu cuenta desde <a href=%s>este link</a>.
+                """, activationLink);
 
         emailSendingService.sendEmail(user.getEmail(),
                 "Activación de Cuenta",

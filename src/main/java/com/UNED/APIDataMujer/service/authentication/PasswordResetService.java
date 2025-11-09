@@ -57,7 +57,7 @@ public class PasswordResetService {
 
         String message = String.format("""
                 Este es su token de restablecimiento de contraseña:
-                %s
+                <br><br><b>%s</b><br><br>
                 Ingrese dicho token en el espacio indicado en la aplicación junto con su nueva contraseña.
                 Bajo ningún motivo comparta este token con ningúna otra persona.
                 """, resetToken);
