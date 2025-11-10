@@ -9,6 +9,7 @@ import com.UNED.APIDataMujer.service.emailing.EmailSendingService;
 
 import com.UNED.APIDataMujer.service.resource.TokenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,9 @@ public class ActivationService {
 
     private final EmailSendingService emailSendingService;
     private final TokenService tokenService;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     /**
      * Función principal del proceso. Es la función encargada de ejecutar la activación
@@ -69,7 +73,9 @@ public class ActivationService {
         final String activationToken = tokenService.generateToken(expiration);
         tokenService.saveToken(activationToken, user, TokenType.ACTIVATION);
 
-        String activationLink = "http://localhost:8080/activate?token=" + activationToken;
+        //String activationLink = "http://localhost:8080/activate?token=" + activationToken;
+        String activationLink = String.format("%s/activate?token=%s", baseUrl, activationToken);
+
 
         String body = String.format("""
                 Nos alegra mucho que te unas a Data Mujer.
