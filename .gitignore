@@ -96,3 +96,7 @@ HELP.md
 .env
 *.env
 .env.*
+
+
+# Allow templates
+!.env.template

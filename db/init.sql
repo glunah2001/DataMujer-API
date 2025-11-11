@@ -1,0 +1,130 @@
+CREATE DATABASE IF NOT EXISTS AsoDataMujerDB 
+    DEFAULT CHARACTER SET utf8 
+    COLLATE utf8_spanish_ci;
+
+USE AsoDataMujerDB;
+
+CREATE TABLE TBDMMAEPersonas(
+	Id BIGINT AUTO_INCREMENT,
+    TipoPersona varchar(8) NOT NULL,
+    Telefono varchar(17) NOT NULL UNIQUE,
+    Pais varchar(35) NOT NULL,
+    Ubicacion varchar(255) NOT NULL,
+    CONSTRAINT TBDMMAEPersonasId PRIMARY KEY (Id)
+);
+
+CREATE TABLE TBDMDETLegales(
+	Id BIGINT,
+    IdLegal varchar(10) NOT NULL UNIQUE,
+    NombreNegocio varchar(50) NOT NULL,
+    FechaFundacion DATE NOT NULL,
+    CONSTRAINT PKTBDMDETLegalesId PRIMARY KEY (Id),
+    CONSTRAINT TBDMDETLegalesFKTBDMMAEPersonasId FOREIGN KEY(Id) REFERENCES TBDMMAEPersonas(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMDETFisicas(
+	Id BIGINT,
+    IdNacional varchar(12) NOT NULL UNIQUE,
+    PrimerApellido varchar(25) NOT NULL,
+    SegundoApellido varchar(25) NOT NULL,
+    Nombre varchar(25) NOT NULL,
+    Profesion varchar(35) NOT NULL,
+    FechaNacimiento DATE NOT NULL,
+    CONSTRAINT PKTBDMDETFisicasId PRIMARY KEY (Id),
+    CONSTRAINT TBDMDETFisicasFKTBDMMAEPersonasId FOREIGN KEY(Id) REFERENCES TBDMMAEPersonas(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMMAEUsuarios(
+	Id BIGINT AUTO_INCREMENT,
+    PersonasId BIGINT NOT NULL UNIQUE,
+    Usuario varchar(15) NOT NULL UNIQUE,
+    Email varchar(255) NOT NULL UNIQUE,
+    Contrasena varchar(255) NOT NULL,
+    Rol varchar(25) NOT NULL,
+    FechaRegistro DATE NOT NULL,
+    EstaActivo BOOLEAN NOT NULL,
+    EsContribuidor BOOLEAN Not NULL,
+    EsAfiliado BOOLEAN NOT NULL,
+    CONSTRAINT PKTBDMMAEUsuariosId PRIMARY KEY (Id),
+    CONSTRAINT TBDMMAEUsuariosFKTBDMPersonas FOREIGN KEY(PersonasId) REFERENCES TBDMMAEPersonas(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMDETPagos(
+	Id BIGINT AUTO_INCREMENT,
+    UsuariosId BIGINT NOT NULL,
+    Descripcion varchar(255) NOT NULL,
+    Clasificacion varchar(15) NOT NULL,
+    Metodo varchar(15) NOT NULL,
+    FechaPago DATETIME,
+    EstaPagado BOOLEAN NOT NULL,
+    MontoTotal DECIMAL (10, 2) NOT NULL,
+    CONSTRAINT PKTBDMDETPagosId PRIMARY KEY (Id),
+    CONSTRAINT TBDMDETPagosFKTBDMMAEUsuarios FOREIGN KEY(UsuariosId) REFERENCES TBDMMAEUsuarios(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMMAEActividades(
+	Id BIGINT AUTO_INCREMENT,
+    Actividad varchar(50) NOT NULL,
+    Descripcion varchar(255) NOT NULL,
+    Ubicacion varchar(255) NOT NULL,
+    EsPresencial BOOLEAN NOT NULL,
+    FechaInicio DATETIME NOT NULL,
+    FechaFin DATETIME NOT NULL,
+    EstaCerrada BOOLEAN NOT NULL,
+    CONSTRAINT PKTBDMMAEActividadesId PRIMARY KEY (Id)
+);
+
+CREATE TABLE TBDMRELVoluntariados(
+	Id BIGINT AUTO_INCREMENT,
+    ActividadesId BIGINT NOT NULL,
+    UsuariosId BIGINT NOT NULL,
+    InicioTurno DATETIME NOT NULL,
+    FinTurno DATETIME NOT NULL,
+    RolEnActividad varchar(35) NOT NULL,
+    EsOrganizador BOOLEAN NOT NULL,
+    CONSTRAINT PKTBDMRELVoluntariadosId PRIMARY KEY (Id),
+    CONSTRAINT TBDMRELVoluntariadosFKTBDMMAEActividades FOREIGN KEY(ActividadesId) REFERENCES TBDMMAEActividades(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+    CONSTRAINT TBDMRELVoluntariadosFKTBDMMAEUsuarios FOREIGN KEY(UsuariosId) REFERENCES TBDMMAEUsuarios(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMRELAcciones(
+	Id BIGINT AUTO_INCREMENT,
+    ActividadesId BIGINT NOT NULL,
+    UsuariosId BIGINT NOT NULL,
+    FechaRegistro DATE NOT NULL,
+    FechaInicio Date,
+    FechaFin Date,
+    Estado varchar(10) NOT NULL,
+    CONSTRAINT PKTBDMRELAccionesId PRIMARY KEY (Id),
+    CONSTRAINT TBDMRELAccionesFKTBDMMAEActividades FOREIGN KEY(ActividadesId) REFERENCES TBDMMAEActividades(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+    CONSTRAINT TBDMRELAccionesFKTBDMMAEUsuarios FOREIGN KEY(UsuariosId) REFERENCES TBDMMAEUsuarios(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE TBDMDETTokens(
+	Id BIGINT AUTO_INCREMENT,
+    UsuariosId BIGINT NOT NULL,
+    TipoToken varchar(20) NOT NULL,
+    Token varchar(512) NOT NULL,
+    EstaExpirado BOOLEAN NOT NULL,
+    EstaRevocado BOOLEAN NOT NULL,
+    CONSTRAINT PKTBDMDETTokensId PRIMARY KEY (Id),
+    CONSTRAINT TBDMDETTokensFKTBDMMAEUsuarios FOREIGN KEY(UsuariosId) REFERENCES TBDMMAEUsuarios(Id) 
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
