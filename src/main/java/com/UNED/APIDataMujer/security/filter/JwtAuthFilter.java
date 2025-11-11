@@ -5,7 +5,7 @@ import com.UNED.APIDataMujer.entity.User;
 import com.UNED.APIDataMujer.mapper.ApiErrorMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.repository.UserRepository;
-import com.UNED.APIDataMujer.service.JwtService;
+import com.UNED.APIDataMujer.service.jwt.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,6 +25,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Clase encargada de filtrar todas las peticiones. Tiene mayor énfasis en aquellas
+ * dirigidas a rutas protegidas
+ * @author glunah2001
+ * */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -34,13 +39,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final UserDetailsService userDetailsService;
     private final ApiErrorMapper apiErrorMapper;
+    private final ObjectMapper objectMapper;
 
+    /**
+     * Función de clase abstracta encargada de revisar que cada request tenga un
+     * JWT (su mecanismo de autentificación y autorización) sea válido para
+     * colocar al usuario en el securityContext.
+     * @param request petición enviada desde el cliente
+     * @param response respuesta a enviar al cliente
+     * @param filterChain secuencia de filtros a ejecutar
+     * */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        if(request.getServletPath().contains("/auth") || request.getServletPath().contains("/register")){
+        if(request.getServletPath().contains("/auth") || request.getServletPath().contains("/register") ||
+                request.getServletPath().contains("/activate")){
             filterChain.doFilter(request, response);
             return;
         }
@@ -111,6 +126,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Función auxiliar para retornar un DTO de reporte de error similar a como se hace con el
+     * RestControllerAdvice general.
+     * */
     private void sendError(HttpServletResponse response, int status, String message, String path)
             throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -122,6 +141,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 path
         );
 
-        response.getWriter().write(new ObjectMapper().writeValueAsString(apiError));
+        response.getWriter().write(objectMapper.writeValueAsString(apiError));
     }
 }

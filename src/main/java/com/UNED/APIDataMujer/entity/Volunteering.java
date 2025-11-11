@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TBDMRELVoluntariados")
@@ -33,9 +33,15 @@ public class Volunteering {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    @Column(name = "FechaVoluntario", nullable = false)
-    private LocalDate volunteerDate;
+    @Column(name = "InicioTurno", nullable = false)
+    private LocalDateTime startShift;
 
-    @Column(name = "RolEnActividad", length = 15, nullable = false)
+    @Column(name = "FinTurno", nullable = false)
+    private LocalDateTime endShift;
+
+    @Column(name = "RolEnActividad", length = 35, nullable = false)
     private String activityRole;
+
+    @Column(name = "EsOrganizador", nullable = false)
+    private boolean isMainOrganizer;
 }

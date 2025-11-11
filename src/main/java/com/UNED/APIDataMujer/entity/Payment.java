@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -41,9 +42,6 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     @Column(name = "Metodo", nullable = false)
     private Method method;
-
-    @Column(name = "MesAnoPago", length = 7, nullable = false)
-    private String paymentMonthYear;
 
     @Column(name = "FechaPago", columnDefinition = "DATETIME")
     private LocalDateTime paymentDate;

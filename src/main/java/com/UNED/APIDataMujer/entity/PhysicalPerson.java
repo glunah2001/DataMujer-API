@@ -31,13 +31,13 @@ public class PhysicalPerson {
     @Column(name = "IdNacional", length = 12, nullable = false, unique = true)
     private String nationalId;
 
-    @Column(name = "PrimerApellido", length = 15, nullable = false)
+    @Column(name = "PrimerApellido", length = 25, nullable = false)
     private String firstSurname;
 
-    @Column(name = "SegundoApellido", length = 15, nullable = false)
+    @Column(name = "SegundoApellido", length = 25, nullable = false)
     private String secondSurname;
 
-    @Column(name = "Nombre", length = 15, nullable = false)
+    @Column(name = "Nombre", length = 25, nullable = false)
     private String name;
 
     @Column(name = "Profesion", length = 35, nullable = false)

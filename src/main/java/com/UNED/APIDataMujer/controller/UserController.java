@@ -1,0 +1,175 @@
+package com.UNED.APIDataMujer.controller;
+
+import com.UNED.APIDataMujer.dto.request.LegalPersonUpdateDTO;
+import com.UNED.APIDataMujer.dto.request.PhysicalPersonUpdateDTO;
+import com.UNED.APIDataMujer.service.resource.LegalPersonService;
+import com.UNED.APIDataMujer.service.resource.PhysicalPersonService;
+import com.UNED.APIDataMujer.service.resource.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * RestController (con ruta protegida) encargado de todas las consultas relacionadas
+ * con los usuarios.
+ * @author glunah2001
+ * @see UserService
+ * */
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/user")
+public class UserController {
+
+    private final UserService userService;
+    private final PhysicalPersonService physicalPersonService;
+    private final LegalPersonService legalPersonService;
+
+    /**
+     * Función encargada de obtener el perfil propio de la persona.
+     * @param auth Authentication obtenida de los filtros de seguridad con la cual saber
+     *             cuál usuario está solicitando su información personal.
+     * @return un dto. Con toda la información pública no comprometida del usuario.
+     * */
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(final Authentication auth){
+        final var dto = userService.getMyProfile(auth);
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Función encargada de actualizar el perfil de una persona física con nueva
+     * información pública no comprometida.
+     * @param auth Authentication obtenida de los filtros de seguridad con la cual saber
+     *             cuál usuario está actualizando su información personal.
+     * @param updateDto Dto. Con toda la información a actualizar.
+     * @return Dto. Con toda su información actualizada.
+     * */
+    @PutMapping("/me/physical")
+    public ResponseEntity<?> updateMyPhysicalProfile(final Authentication auth,
+                                             @Valid @RequestBody PhysicalPersonUpdateDTO updateDto){
+        final var user = userService.updateUserData(auth, updateDto.commonUpdateDTO());
+        var dto = physicalPersonService.updateMyPhysicalProfile(user, updateDto);
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Función encargada de actualizar el perfil de una persona legal con nueva
+     * información pública no comprometida.
+     * @param auth Authentication obtenida de los filtros de seguridad con la cual saber
+     *             cuál usuario está actualizando su información personal.
+     * @param updateDto Dto. Con toda la información a actualizar.
+     * @return Dto. Con toda su información actualizada.
+     * */
+    @PutMapping("me/legal")
+    public ResponseEntity<?> updateMyLegalProfile(final Authentication auth,
+                                             @Valid @RequestBody LegalPersonUpdateDTO updateDto){
+        final var user = userService.updateUserData(auth, updateDto.commonUpdateDTO());
+        var dto = legalPersonService.updateMyLegalProfile(user, updateDto);
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Endpoint para permitir a los usuarios administradores alterar los roles de una persona.
+     * Preferiblemente que no se trate del administrador que aplica la operación.
+     * @param auth credenciales.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @param role rol a asignar.
+     * @return mensaje de confirmación con el cambio. Código 200.
+     * */
+    @PutMapping("/set/Role")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateRole(final Authentication auth,
+                                        @RequestParam String username,
+                                        @RequestParam(defaultValue = "0") int role){
+        var message = userService.setRole(auth, username, role);
+        return ResponseEntity.ok("Actualización realizada - "+message);
+    }
+
+    /**
+     * Endpoint para permitir a los usuarios administradores alterar el estado
+     * Afiliado/Sin Afiliar de una persona.
+     * @param username nombre del usuario al cual aplicar el cambio.
+     * @return mensaje de confirmación con el cambio. Código 200.
+     * */
+    @PutMapping("/set/Affiliate")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateRole(@RequestParam String username){
+        var message = userService.setAffiliate(username);
+        return ResponseEntity.ok("Actualización realizada - "+message);
+    }
+
+    /**
+     * Función encargada de solicitar un único usuario por su username.
+     * Se espera un único usuario dado que los Username son únicos.
+     * @param username nombre de usuario de la persona a buscar.
+     * @return Dto. Con la información del usuario.
+     * */
+    @GetMapping("/search/username")
+    public ResponseEntity<?> findByUsername(@RequestParam String username) {
+        return ResponseEntity.ok(userService.getPersonByUsername(username));
+    }
+
+    /**
+     * Función encargada de solicitar un único usuario (persona física) por su id nacional.
+     * Se espera un único usuario dado que los di nacionales son únicos.
+     * @param id cédula de identidad de la persona a buscar.
+     * @return Dto. Con la información del usuario (persona física).
+     * */
+    @GetMapping("/search/national-id")
+    public ResponseEntity<?> findByNationalId(@RequestParam String id) {
+        return ResponseEntity.ok(physicalPersonService.getPersonByNationalId(id));
+    }
+
+    /**
+     * Función encargada de solicitar un único usuario (persona legal) por su id legal.
+     * Se espera un único usuario dado que los di legal son únicos.
+     * @param id cédula jurídica de la persona a buscar.
+     * @return Dto. Con la información del usuario (persona legal).
+     * */
+    @GetMapping("/search/legal-id")
+    public ResponseEntity<?> findByLegalId(@RequestParam String id) {
+        return ResponseEntity.ok(legalPersonService.getPersonByLegalId(id));
+    }
+
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas físicas)
+     * por un nombre determinado por el cliente.
+     * @param name nombre por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas físicas).
+     * */
+    @GetMapping("/search/name")
+    public ResponseEntity<?> findByName(@RequestParam String name,
+                                        @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(physicalPersonService.getPersonByName(name, page));
+    }
+
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas físicas)
+     * por un apellido determinado por el cliente.
+     * @param surname apellido por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas físicas).
+     * */
+    @GetMapping("/search/surname")
+    public ResponseEntity<?> findBySurname(@RequestParam String surname,
+                                           @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(physicalPersonService.getPersonBySurname(surname, page));
+    }
+
+    /**
+     * Función encargada de solicitar a todos los usuarios (personas jurídicas)
+     * por un nombre de negocio determinado por el cliente.
+     * @param businessName nombre de negocio por el que se buscará a los usuarios.
+     * @param page indicador de paginación.
+     * @return Dto. Con la información de los usuarios (personas jurídicas).
+     * */
+    @GetMapping("/search/business")
+    public ResponseEntity<?> findByBusinessName(@RequestParam String businessName,
+                                                @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(legalPersonService.getPersonByBusinessName(businessName, page));
+    }
+}

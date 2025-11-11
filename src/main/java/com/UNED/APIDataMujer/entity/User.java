@@ -24,7 +24,7 @@ public class User {
     @Column(name = "Id")
     private long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "PersonasId", unique = true, nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Person person;

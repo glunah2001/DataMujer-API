@@ -1,5 +1,6 @@
 package com.UNED.APIDataMujer.entity;
 
+import com.UNED.APIDataMujer.enums.ParticipationState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,6 +43,7 @@ public class Participation {
     @Column(name = "FechaFin")
     private LocalDate endDate;
 
-    @Column(name = "HorasSemanales", nullable = false)
-    private float weeklyHours;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Estado", nullable = false)
+    private ParticipationState status;
 }
