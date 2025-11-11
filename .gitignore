@@ -89,3 +89,14 @@ Desktop.ini
 # ===============================
 README.html
 HELP.md
+
+# ===============================
+# Env / Secrets
+# ===============================
+.env
+*.env
+.env.*
+
+
+# Allow templates
+!.env.template
