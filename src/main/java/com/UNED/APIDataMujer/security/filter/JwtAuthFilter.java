@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Clase encargada de filtrar todas las peticiones. Tiene mayor énfasis en aquellas
+ * Clase encargada de filtrar todas las peticiones según su JWT. Tiene mayor énfasis en aquellas
  * dirigidas a rutas protegidas
  * @author glunah2001
  * */
@@ -63,7 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final var header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(header == null || !header.startsWith("Bearer ")){
             sendError(response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
                     "Acceso no autorizado: formato de token inválido",
                     request.getServletPath());
             return;
@@ -73,7 +72,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final var username = jwtService.getUsername(jjwt);
         if(username == null){
             sendError(response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
                     "Acceso no autorizado: el token puede estar corrupto o ser inválido.",
                     request.getServletPath());
             return;
@@ -87,7 +85,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final var token = tokenRepository.findByToken(jjwt).orElse(null);
         if(token == null || token.isExpired() || token.isRevoked()){
             sendError(response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
                     "Acceso no autorizado: el token ya no es válido.",
                     request.getServletPath());
             return;
@@ -97,7 +94,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final Optional<User> user = userRepository.findByUsername(userDetails.getUsername());
         if(user.isEmpty()){
             sendError(response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
                     "Acceso no autorizado: el usuario indicado en el token " +
                             "no existe en la base de datos.",
                     request.getServletPath());
@@ -107,7 +103,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final boolean isTokenValid = jwtService.isTokenValid(jjwt, user.get());
         if(!isTokenValid){
             sendError(response,
-                    HttpServletResponse.SC_UNAUTHORIZED,
                     "Acceso no autorizado: el token ya no es válido para este usuario.",
                     request.getServletPath());
 
@@ -130,13 +125,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      * Función auxiliar para retornar un DTO de reporte de error similar a como se hace con el
      * RestControllerAdvice general.
      * */
-    private void sendError(HttpServletResponse response, int status, String message, String path)
+    private void sendError(HttpServletResponse response, String message, String path)
             throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
         ApiError apiError = apiErrorMapper.toDto(
-                HttpStatus.valueOf(status),
+                HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED),
                 message,
                 path
         );
