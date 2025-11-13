@@ -6,6 +6,7 @@ import com.UNED.APIDataMujer.exception.ResourceNotFoundException;
 import com.UNED.APIDataMujer.mapper.ApiErrorMapper;
 import com.UNED.APIDataMujer.repository.TokenRepository;
 import com.UNED.APIDataMujer.security.filter.JwtAuthFilter;
+import com.UNED.APIDataMujer.security.filter.VersionCheckFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +38,7 @@ import java.io.IOException;
 public class SecurityConfig{
 
     private final AuthenticationProvider authProvider;
+    private final VersionCheckFilter versionCheckFilter;
     private final JwtAuthFilter jwtAuthFilter;
     private final TokenRepository tokenRepository;
     private final ApiErrorMapper apiErrorMapper;
@@ -65,6 +67,7 @@ public class SecurityConfig{
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(versionCheckFilter, JwtAuthFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request,
                                                    response,
