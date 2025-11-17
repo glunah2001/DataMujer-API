@@ -91,6 +91,9 @@ public class VolunteeringServiceImpl implements VolunteeringService{
                                                                     int page) {
         var user = userService.getMyUser(auth);
 
+        if(!activityRepository.existsById(activityId))
+            throw new ResourceNotFoundException("La actividad "+activityId+" no existe");
+
         if(!isUserOrganizer(activityId, user.getId()) && user.getRole() != Role.ROLE_ADMIN)
             throw new BusinessValidationException("La actividad "+activityId+" y sus voluntariados no " +
                     "pueden ser consultadas por su persona");
