@@ -42,6 +42,11 @@ public class VersionCheckFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        if(request.getServletPath().contains("/activate")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String clientName = request.getHeader("X-Client-Name");
         String clientVersion = request.getHeader("X-Client-Version");
 
